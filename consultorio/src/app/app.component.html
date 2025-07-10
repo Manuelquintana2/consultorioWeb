@@ -1,0 +1,49 @@
+<div class="app-container">
+  <header class="app-header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <h1>🏥 Consultorio Médico</h1>
+          <p class="subtitle">Sistema de Gestión Integral</p>
+        </div>
+        <nav class="nav-menu">
+          <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
+            <span class="nav-icon">🏠</span>
+            Dashboard
+          </a>
+          <a routerLink="/pacientes" routerLinkActive="active" class="nav-link">
+            <span class="nav-icon">👥</span>
+            Pacientes
+          </a>
+          <a routerLink="/turnos" routerLinkActive="active" class="nav-link">
+            <span class="nav-icon">📅</span>
+            Turnos
+          </a>
+          <a routerLink="/horarios" routerLinkActive="active" class="nav-link">
+            <span class="nav-icon">⏰</span>
+            Horarios
+          </a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <div class="container">
+      <router-outlet />
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <div class="container">
+      <div class="footer-content">
+        <p>&copy; 2025 Consultorio Médico. Sistema de gestión desarrollado con Angular y Node.js por Manuel Quintana Miño</p>
+        <div class="footer-links">
+          <a href="#" class="footer-link">Política de Privacidad</a>
+          <a href="#" class="footer-link">Términos de Uso</a>
+          <a href="#" class="footer-link">Soporte</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>

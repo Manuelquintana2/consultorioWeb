@@ -1,0 +1,64 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1>Consultorio Médico</h1>
+      <p>Iniciar Sesión</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          placeholder="Ingrese su email"
+          [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+        />
+        <div class="error-message" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+          <span *ngIf="loginForm.get('email')?.errors?.['required']">El email es obligatorio</span>
+          <span *ngIf="loginForm.get('email')?.errors?.['email']">Formato de email inválido</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          placeholder="Ingrese su contraseña"
+          [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+        />
+        <div class="error-message" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+          <span *ngIf="loginForm.get('password')?.errors?.['required']">La contraseña es obligatoria</span>
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        [disabled]="loginForm.invalid || loading"
+        class="login-button"
+      >
+        <span *ngIf="!loading">Iniciar Sesión</span>
+        <span *ngIf="loading">Iniciando...</span>
+      </button>
+    </form>
+
+    <div class="login-info">
+      <h3>Credenciales de Prueba:</h3>
+      <div class="credentials">
+        <div class="credential-item">
+          <strong>Kinesióloga:</strong>
+          <p>Email: kinesiologa&#64;consultorio.com</p>
+          <p>Contraseña: kinesiologa123</p>
+        </div>
+        <div class="credential-item">
+          <strong>Odontólogo:</strong>
+          <p>Email: odontologo&#64;consultorio.com</p>
+          <p>Contraseña: odontologo123</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

@@ -1,0 +1,143 @@
+<div class="turnos-container">
+  <div class="header">
+    <h2>Gestión de Turnos</h2>
+    <button class="btn-primary" (click)="resetForm()" *ngIf="!editando">
+      Nuevo Turno
+    </button>
+  </div>
+
+  <!-- Formulario -->
+  <div class="form-section" *ngIf="mostrandoFormulario">
+    <h3>{{ editando ? 'Editar' : 'Nuevo' }} Turno</h3>
+    <form [formGroup]="turnoForm" (ngSubmit)="onSubmit()" class="turno-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="especialista">Especialista *</label>
+          <select id="especialista" formControlName="especialista_uid" (change)="onEspecialistaChange()">
+            <option value="">Seleccione un especialista</option>
+            <option value="esp_kinesiologa">Kinesióloga</option>
+            <option value="esp_odontologo">Odontólogo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="paciente">Paciente *</label>
+          <select id="paciente" formControlName="paciente_uid">
+            <option value="">Seleccione un paciente</option>
+            <option *ngFor="let paciente of pacientes" [value]="paciente.uid">
+              {{ paciente.nombre }} - {{ paciente.seccion }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="fecha">Fecha *</label>
+          <input 
+            type="date" 
+            id="fecha" 
+            formControlName="fecha" 
+            (change)="onFechaChange()"
+            [min]="fechaSeleccionada"
+          >
+        </div>
+        <div class="form-group">
+          <label for="hora">Hora *</label>
+          <select id="hora" formControlName="hora">
+            <option value="">Seleccione una hora</option>
+            <option *ngFor="let hora of horariosDisponibles" [value]="hora">
+              {{ hora }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="comentario">Comentario</label>
+        <textarea 
+          id="comentario" 
+          formControlName="comentario" 
+          placeholder="Observaciones adicionales..."
+          rows="3"
+        ></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button 
+          type="submit" 
+          class="btn-primary" 
+          [disabled]="turnoForm.invalid || loading"
+        >
+          {{ loading ? 'Guardando...' : (editando ? 'Actualizar' : 'Crear') }}
+        </button>
+        <button 
+          type="button" 
+          class="btn-secondary" 
+          (click)="cancelarEdicion()"
+          *ngIf="editando"
+        >
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Lista de Turnos -->
+  <div class="turnos-list" *ngIf="turnos.length > 0">
+    <h3>Lista de Turnos</h3>
+    
+    <!-- Filtro de Turnos -->
+    <div class="filtro-section">
+      <div class="filtro-input">
+        <label for="filtroTurnos">Buscar turnos:</label>
+        <input 
+          type="text" 
+          id="filtroTurnos" 
+          [(ngModel)]="filtroTurnos" 
+          placeholder="Buscar por fecha, paciente, especialista, estado..."
+          class="filtro-input-field"
+        >
+      </div>
+    </div>
+    
+    <div class="loading" *ngIf="loading">
+      Cargando turnos...
+    </div>
+
+    <div class="turnos-grid" *ngIf="!loading">
+      <div class="turno-card" *ngFor="let turno of turnos | filtroTurnos:filtroTurnos:pacientes">
+        <div class="turno-header">
+          <h4>{{ getPacienteNombre(turno.paciente_uid) }}</h4>
+          <span class="estado-badge" [class]="getEstadoClass(turno.estado)">
+            {{ turno.estado }}
+          </span>
+        </div>
+        
+        <div class="turno-info">
+          <p><strong>Fecha:</strong> {{ turno.fecha | date:'dd/MM/yyyy' }}</p>
+          <p><strong>Hora:</strong> {{ turno.hora }}</p>
+          <p><strong>Especialista:</strong> 
+            {{ turno.especialista_uid === 'esp_kinesiologa' ? 'Kinesióloga' : 'Odontólogo' }}
+          </p>
+          <p *ngIf="turno.comentario"><strong>Comentario:</strong> {{ turno.comentario }}</p>
+        </div>
+
+        <div class="turno-actions">
+          <button class="btn-edit" (click)="editarTurno(turno)" *ngIf="turno.estado === 'activo'">
+            Editar
+          </button>
+          <button class="btn-cancel" (click)="cancelarTurno(turno.uid)" *ngIf="turno.estado === 'activo'">
+            Cancelar
+          </button>
+          <button class="btn-complete" (click)="completarTurno(turno.uid)" *ngIf="turno.estado === 'activo'">
+            Completar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="no-turnos" *ngIf="!loading && turnos.length === 0">
+      No hay turnos registrados.
+    </div>
+  </div>
+</div> 

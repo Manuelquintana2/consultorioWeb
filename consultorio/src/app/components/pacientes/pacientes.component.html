@@ -1,0 +1,147 @@
+<div class="pacientes-container">
+  <div class="header">
+    <h2>Gestión de Pacientes</h2>
+    <button class="btn-primary" (click)="resetForm()" *ngIf="!editando">
+      Nuevo Paciente
+    </button>
+  </div>
+
+  <!-- Formulario -->
+  <div class="form-section" *ngIf="mostrandoFormulario">
+    <h3>{{ editando ? 'Editar' : 'Nuevo' }} Paciente</h3>
+    <form [formGroup]="pacienteForm" (ngSubmit)="onSubmit()" class="paciente-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nombre">Nombre Completo *</label>
+          <input 
+            type="text" 
+            id="nombre" 
+            formControlName="nombre" 
+            placeholder="Ingrese el nombre completo"
+          >
+        </div>
+        <div class="form-group">
+          <label for="obraSocial">Obra Social *</label>
+          <input 
+            type="text" 
+            id="obraSocial" 
+            formControlName="obraSocial" 
+            placeholder="Ingrese la obra social"
+          >
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="telefono">Teléfono *</label>
+          <input 
+            type="tel" 
+            id="telefono" 
+            formControlName="telefono" 
+            placeholder="Ingrese el teléfono"
+          >
+        </div>
+        <div class="form-group">
+          <label for="fechaNacimiento">Fecha de Nacimiento *</label>
+          <input 
+            type="date" 
+            id="fechaNacimiento" 
+            formControlName="fechaNacimiento"
+          >
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="domicilio">Domicilio *</label>
+        <input 
+          type="text" 
+          id="domicilio" 
+          formControlName="domicilio" 
+          placeholder="Ingrese el domicilio completo"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="seccion">Sección *</label>
+        <select id="seccion" formControlName="seccion">
+          <option value="">Seleccione una sección</option>
+          <option value="Kinesiologia">Kinesiología</option>
+          <option value="Odontologia">Odontología</option>
+          <option value="Ambas">Ambas</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button 
+          type="submit" 
+          class="btn-primary" 
+          [disabled]="pacienteForm.invalid || loading"
+        >
+          {{ loading ? 'Guardando...' : (editando ? 'Actualizar' : 'Crear') }}
+        </button>
+        <button 
+          type="button" 
+          class="btn-secondary" 
+          (click)="cancelarEdicion()"
+          *ngIf="editando || mostrandoFormulario"
+        >
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Lista de Pacientes -->
+  <div class="pacientes-list" *ngIf="pacientes.length > 0">
+    <h3>Lista de Pacientes</h3>
+    
+    <!-- Filtro de Pacientes -->
+    <div class="filtro-section">
+      <div class="filtro-input">
+        <label for="filtroPacientes">Buscar pacientes:</label>
+        <input 
+          type="text" 
+          id="filtroPacientes" 
+          [(ngModel)]="filtroPacientes" 
+          placeholder="Buscar por nombre, obra social, teléfono, domicilio..."
+          class="filtro-input-field"
+        >
+      </div>
+    </div>
+    
+    <div class="loading" *ngIf="loading">
+      Cargando pacientes...
+    </div>
+
+    <div class="pacientes-grid" *ngIf="!loading">
+      <div class="paciente-card" *ngFor="let paciente of pacientes | filtroPacientes:filtroPacientes">
+        <div class="paciente-header">
+          <h4>{{ paciente.nombre }}</h4>
+          <span class="seccion-badge" [class]="paciente.seccion.toLowerCase()">
+            {{ paciente.seccion }}
+          </span>
+        </div>
+        
+        <div class="paciente-info">
+          <p><strong>Obra Social:</strong> {{ paciente.obrasocial }}</p>
+          <p><strong>Teléfono:</strong> {{ paciente.telefono }}</p>
+          <p><strong>Domicilio:</strong> {{ paciente.domicilio }}</p>
+          <p><strong>Fecha Nac.:</strong> {{ paciente.fechanacimiento | date:'dd/MM/yyyy' }}</p>
+        </div>
+
+        <div class="paciente-actions">
+          <button class="btn-edit" (click)="editarPaciente(paciente)">
+            Editar
+          </button>
+          <button class="btn-delete" (click)="eliminarPaciente(paciente.uid)">
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="no-pacientes" *ngIf="!loading && pacientes.length === 0">
+      No hay pacientes registrados.
+    </div>
+  </div>
+</div> 

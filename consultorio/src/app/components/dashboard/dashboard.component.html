@@ -1,0 +1,57 @@
+<div class="dashboard-container">
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1>Consultorio Médico</h1>
+      <div class="user-info">
+        <span>Bienvenido, {{ currentUser?.email }}</span>
+        <span class="specialty">({{ currentUser?.especialidad }})</span>
+        <button (click)="logout()" class="logout-btn">Cerrar Sesión</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-main">
+    <div class="dashboard-grid">
+      <!-- Gestión de Pacientes -->
+      <div class="dashboard-card">
+        <h3>Gestión de Pacientes</h3>
+        <p>Registrar y gestionar pacientes</p>
+        <button class="card-btn" (click)="navegarA('pacientes')">Ver Pacientes</button>
+      </div>
+
+      <!-- Gestión de Turnos -->
+      <div class="dashboard-card">
+        <h3>Gestión de Turnos</h3>
+        <p>Programar y gestionar turnos</p>
+        <button class="card-btn" (click)="navegarA('turnos')">Ver Turnos</button>
+      </div>
+
+      <!-- Horarios -->
+      <div class="dashboard-card">
+        <h3>Horarios</h3>
+        <p>Configurar horarios de disponibilidad</p>
+        <button class="card-btn" (click)="navegarA('horarios')">Configurar Horarios</button>
+      </div>
+
+      <!-- Funcionalidades específicas por especialidad -->
+      <div class="dashboard-card" *ngIf="isKinesiologo()">
+        <h3>Fichas Kinesicas</h3>
+        <p>Gestionar fichas kinesicas de pacientes</p>
+        <button class="card-btn">Ver Fichas</button>
+      </div>
+
+      <div class="dashboard-card" *ngIf="isOdontologo()">
+        <h3>Odontogramas</h3>
+        <p>Gestionar odontogramas de pacientes</p>
+        <button class="card-btn">Ver Odontogramas</button>
+      </div>
+
+      <!-- Reportes -->
+      <div class="dashboard-card">
+        <h3>Reportes</h3>
+        <p>Generar reportes y estadísticas</p>
+        <button class="card-btn">Ver Reportes</button>
+      </div>
+    </div>
+  </main>
+</div> 

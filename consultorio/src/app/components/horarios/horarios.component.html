@@ -1,0 +1,97 @@
+<div class="horarios-container">
+  <div class="header">
+    <h2>Gestión de Horarios</h2>
+    <p class="subtitle">Configura los horarios disponibles para cada día de la semana</p>
+  </div>
+
+  <!-- Mensajes -->
+  <div class="messages">
+    <div class="error-message" *ngIf="errorMessage" (click)="limpiarMensajes()">
+      {{ errorMessage }}
+    </div>
+    <div class="success-message" *ngIf="successMessage" (click)="limpiarMensajes()">
+      {{ successMessage }}
+    </div>
+  </div>
+
+  <!-- Formulario de Horarios -->
+  <div class="form-section">
+    <form [formGroup]="horariosForm" (ngSubmit)="onSubmit()" class="horarios-form">
+      <div class="horarios-grid">
+        <div class="dia-column" *ngFor="let dia of diasSemana">
+          <div class="dia-header">
+            <h3>{{ getDiaNombre(dia) }}</h3>
+            <div class="dia-actions">
+              <button 
+                type="button" 
+                class="btn-select-all" 
+                (click)="seleccionarTodas(dia)"
+              >
+                Todas
+              </button>
+              <button 
+                type="button" 
+                class="btn-clear-all" 
+                (click)="deseleccionarTodas(dia)"
+              >
+                Limpiar
+              </button>
+            </div>
+          </div>
+          
+          <div class="horas-grid">
+            <div 
+              class="hora-item" 
+              *ngFor="let hora of horasDisponibles"
+              [class.selected]="isHoraSeleccionada(dia, hora)"
+              (click)="toggleHora(dia, hora)"
+            >
+              {{ hora }}
+            </div>
+          </div>
+          
+          <div class="horas-seleccionadas">
+            <strong>Seleccionadas:</strong> 
+            <span *ngIf="horariosForm.get(dia)?.value?.length; else noHoras">
+              {{ horariosForm.get(dia)?.value?.length }} horas
+            </span>
+            <ng-template #noHoras>
+              <span class="no-horas">Ninguna</span>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button 
+          type="submit" 
+          class="btn-primary" 
+          [disabled]="loading"
+        >
+          {{ loading ? 'Guardando...' : 'Guardar Horarios' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Resumen -->
+  <div class="resumen-section" *ngIf="horarios">
+    <h3>Resumen de Horarios</h3>
+    <div class="resumen-grid">
+      <div class="resumen-item" *ngFor="let dia of diasSemana">
+        <div class="resumen-header">
+          <h4>{{ getDiaNombre(dia) }}</h4>
+          <span class="horas-count">{{ horarios[dia]?.length || 0 }} horas</span>
+        </div>
+        <div class="resumen-horas" *ngIf="horarios[dia]?.length">
+          <span class="hora-tag" *ngFor="let hora of horarios[dia]">
+            {{ hora }}
+          </span>
+        </div>
+        <div class="no-horas-resumen" *ngIf="!horarios[dia]?.length">
+          Sin horarios configurados
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 
