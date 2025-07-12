@@ -24,5 +24,10 @@ export const routes: Routes = [
     loadComponent: () => import('./components/horarios/horarios.component').then(m => m.HorariosComponent),
     canActivate: [AuthGuard]
   },
+  { 
+    path: 'fichas-kinesicas', 
+    loadComponent: () => import('./components/fichas-kinesicas/fichas-kinesicas.component').then(m => m.FichasKinesicasComponent),
+    canActivate: [AuthGuard]
+  },
   { path: '**', redirectTo: '/login' }
 ];

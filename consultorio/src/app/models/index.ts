@@ -48,11 +48,25 @@ export interface Diente {
 }
 
 export interface FichaKinesica {
-    paciente_id: number;
+    id?: number;
+    paciente_uid: string;
+    especialista_uid: string;
     diagnostico: string;
-    tratamiento: string;
     evaluacion: string;
-    observaciones: string;
+    sintomas: string;
+    estudios?: string[]; // Array de estudios realizados
+    tratamiento: string;
+    sesiones: SesionKinesica[]; // Array de sesiones con fechas
+    observaciones?: string;
+    fecha_creacion?: string;
+    fecha_actualizacion?: string;
+}
+
+export interface SesionKinesica {
+    numero: number;
+    fecha: string;
+    descripcion?: string;
+    notas?: string;
 }
 
 export interface Odontograma {

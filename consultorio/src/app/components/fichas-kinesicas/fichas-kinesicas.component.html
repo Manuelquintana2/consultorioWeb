@@ -1,0 +1,265 @@
+<div class="container">
+  <div class="header">
+    <h1 class="title">Fichas Kinesicas</h1>
+    <button 
+      (click)="showCreateForm()" 
+      class="btn btn-primary">
+      <span class="btn-icon">+</span>
+      Nueva Ficha
+    </button>
+  </div>
+
+  <!-- Mensaje de error -->
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Lista de fichas -->
+  <div *ngIf="!loading && fichas.length > 0" class="fichas-grid">
+    <div *ngFor="let ficha of fichas" class="ficha-card">
+      <div class="ficha-header">
+        <div class="ficha-info">
+          <h3 class="ficha-title">
+            {{ getPacienteNombre(ficha.paciente_uid) }}
+          </h3>
+          <p class="ficha-date">
+            Creada: {{ formatDate(ficha.fecha_creacion || '') }}
+          </p>
+        </div>
+        <div class="ficha-actions">
+          <button 
+            (click)="viewFicha(ficha)" 
+            class="btn btn-success btn-sm">
+            Ver
+          </button>
+          <button 
+            (click)="showEditForm(ficha)" 
+            class="btn btn-primary btn-sm">
+            Editar
+          </button>
+          <button 
+            (click)="deleteFicha(ficha)" 
+            class="btn btn-danger btn-sm">
+            Eliminar
+          </button>
+        </div>
+      </div>
+      
+      <div class="ficha-details">
+        <div class="detail-item">
+          <strong>Diagnóstico:</strong>
+          <p>{{ ficha.diagnostico }}</p>
+        </div>
+        <div class="detail-item">
+          <strong>Síntomas:</strong>
+          <p>{{ ficha.sintomas }}</p>
+        </div>
+        <div class="detail-item">
+          <strong>Sesiones:</strong>
+          <p>{{ (ficha.sesiones || []).length }} sesiones</p>
+        </div>
+        <div class="detail-item">
+          <strong>Estudios:</strong>
+          <p>{{ (ficha.estudios || []).length }} estudios</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado vacío -->
+  <div *ngIf="!loading && fichas.length === 0" class="empty-state">
+    <div class="empty-icon">📋</div>
+    <h3>No hay fichas kinesicas</h3>
+    <p>Comienza creando una nueva ficha.</p>
+  </div>
+
+  <!-- Modal de formulario -->
+  <div *ngIf="showForm" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          {{ editingFicha ? 'Editar' : 'Nueva' }} Ficha Kinesica
+        </h2>
+        <button (click)="hideForm()" class="close-btn">×</button>
+      </div>
+
+      <form [formGroup]="fichaForm" (ngSubmit)="onSubmit()" class="form">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Paciente</label>
+            <select formControlName="paciente_uid" class="form-select">
+              <option value="">Seleccionar paciente</option>
+              <option *ngFor="let paciente of pacientes" [value]="paciente.uid">
+                {{ paciente.nombre }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Diagnóstico</label>
+            <textarea formControlName="diagnostico" rows="3" class="form-textarea"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Evaluación</label>
+            <textarea formControlName="evaluacion" rows="3" class="form-textarea"></textarea>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Síntomas</label>
+          <textarea formControlName="sintomas" rows="3" class="form-textarea"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tratamiento</label>
+          <textarea formControlName="tratamiento" rows="4" class="form-textarea"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Observaciones</label>
+          <textarea formControlName="observaciones" rows="3" class="form-textarea"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" (click)="hideForm()" class="btn btn-secondary">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="!fichaForm.valid || loading" class="btn btn-primary">
+            {{ loading ? 'Guardando...' : (editingFicha ? 'Actualizar' : 'Crear') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de vista de ficha -->
+  <div *ngIf="selectedFicha && !showSesionForm" class="modal-overlay">
+    <div class="modal modal-large">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          Ficha de {{ getPacienteNombre(selectedFicha.paciente_uid) }}
+        </h2>
+        <button (click)="closeFichaView()" class="close-btn">×</button>
+      </div>
+
+      <div class="ficha-content">
+        <!-- Información básica -->
+        <div class="content-grid">
+          <div class="content-section">
+            <h3 class="section-title">Información General</h3>
+            <div class="info-list">
+              <div class="info-item">
+                <strong>Diagnóstico:</strong>
+                <p>{{ selectedFicha.diagnostico }}</p>
+              </div>
+              <div class="info-item">
+                <strong>Evaluación:</strong>
+                <p>{{ selectedFicha.evaluacion }}</p>
+              </div>
+              <div class="info-item">
+                <strong>Síntomas:</strong>
+                <p>{{ selectedFicha.sintomas }}</p>
+              </div>
+              <div class="info-item">
+                <strong>Tratamiento:</strong>
+                <p>{{ selectedFicha.tratamiento }}</p>
+              </div>
+              <div *ngIf="selectedFicha.observaciones" class="info-item">
+                <strong>Observaciones:</strong>
+                <p>{{ selectedFicha.observaciones }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="content-section">
+            <h3 class="section-title">Estudios</h3>
+            <div class="estudios-list">
+              <div *ngFor="let estudio of (selectedFicha.estudios || []); let i = index" class="estudio-item">
+                <span>{{ estudio }}</span>
+                <button (click)="removeEstudio(selectedFicha, i)" class="btn-icon-danger">×</button>
+              </div>
+              <div class="estudio-add">
+                <input #estudioInput type="text" placeholder="Nuevo estudio" class="form-input">
+                <button (click)="addEstudio(selectedFicha, estudioInput.value); estudioInput.value = ''" class="btn btn-primary btn-sm">
+                  Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sesiones -->
+        <div class="sesiones-section">
+          <div class="sesiones-header">
+            <h3 class="section-title">Sesiones</h3>
+            <button (click)="showSesionFormModal(selectedFicha)" class="btn btn-success btn-sm">
+              Agregar Sesión
+            </button>
+          </div>
+          <div class="sesiones-list">
+            <div *ngFor="let sesion of (selectedFicha.sesiones || [])" class="sesion-item">
+              <div class="sesion-content">
+                <h4 class="sesion-title">Sesión {{ sesion.numero }}</h4>
+                <p class="sesion-date">{{ formatDate(sesion.fecha) }}</p>
+                <p *ngIf="sesion.descripcion" class="sesion-desc">{{ sesion.descripcion }}</p>
+                <p *ngIf="sesion.notas" class="sesion-notes">{{ sesion.notas }}</p>
+              </div>
+              <button (click)="deleteSesion(selectedFicha, sesion.numero)" class="btn-icon-danger">×</button>
+            </div>
+            <div *ngIf="!(selectedFicha.sesiones || []).length" class="empty-sesiones">
+              No hay sesiones registradas
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de formulario de sesión -->
+  <div *ngIf="showSesionForm" class="modal-overlay">
+    <div class="modal modal-small">
+      <div class="modal-header">
+        <h2 class="modal-title">Nueva Sesión</h2>
+        <button (click)="hideSesionForm()" class="close-btn">×</button>
+      </div>
+
+      <form [formGroup]="sesionForm" (ngSubmit)="onSubmitSesion()" class="form">
+        <div class="form-group">
+          <label class="form-label">Número de Sesión</label>
+          <input type="number" formControlName="numero" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Fecha</label>
+          <input type="date" formControlName="fecha" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Descripción</label>
+          <textarea formControlName="descripcion" rows="3" class="form-textarea"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notas</label>
+          <textarea formControlName="notas" rows="2" class="form-textarea"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" (click)="hideSesionForm()" class="btn btn-secondary">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="!sesionForm.valid || loading" class="btn btn-success">
+            {{ loading ? 'Guardando...' : 'Agregar Sesión' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div> 

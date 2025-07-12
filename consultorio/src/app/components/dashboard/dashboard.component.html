@@ -37,7 +37,7 @@
       <div class="dashboard-card" *ngIf="isKinesiologo()">
         <h3>Fichas Kinesicas</h3>
         <p>Gestionar fichas kinesicas de pacientes</p>
-        <button class="card-btn">Ver Fichas</button>
+        <button class="card-btn" (click)="navegarA('fichas-kinesicas')">Ver Fichas</button>
       </div>
 
       <div class="dashboard-card" *ngIf="isOdontologo()">
