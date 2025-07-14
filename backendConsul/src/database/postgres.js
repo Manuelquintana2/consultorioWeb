@@ -94,10 +94,14 @@ class PostgresDatabase {
                 paciente_uid VARCHAR(255) NOT NULL,
                 especialista_uid VARCHAR(255) NOT NULL,
                 diagnostico TEXT NOT NULL,
-                tratamiento TEXT NOT NULL,
                 evaluacion TEXT NOT NULL,
+                sintomas TEXT NOT NULL,
+                estudios JSONB DEFAULT '[]',
+                tratamiento TEXT NOT NULL,
+                sesiones JSONB DEFAULT '[]',
                 observaciones TEXT,
                 fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (paciente_uid) REFERENCES pacientes(uid) ON DELETE CASCADE,
                 FOREIGN KEY (especialista_uid) REFERENCES especialistas(uid) ON DELETE CASCADE
             );
