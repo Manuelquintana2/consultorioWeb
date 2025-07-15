@@ -1,0 +1,57 @@
+<div class="odontogramas-lista-container">
+  <h2>Odontogramas</h2>
+  <button class="btn-primary" (click)="nuevoOdontograma()" *ngIf="!creando && !editando && !viendo">Nuevo Odontograma</button>
+
+  <!-- Lista de odontogramas existentes -->
+  <table *ngIf="!creando && !editando && !viendo && odontogramas.length > 0">
+    <thead>
+      <tr>
+        <th>Paciente</th>
+        <th>Fecha</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let odo of odontogramas">
+        <td>{{ getNombrePaciente(odo.paciente_uid) }}</td>
+        <td>{{ odo.fecha_creacion | date:'dd/MM/yyyy' }}</td>
+        <td>
+          <button class="btn-secondary" (click)="verOdontograma(odo)">Ver</button>
+          <button class="btn-primary" (click)="editarOdontograma(odo)">Editar</button>
+          <button class="btn-danger" (click)="borrarOdontograma(odo)">Borrar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div *ngIf="!creando && !editando && !viendo && odontogramas.length === 0">
+    No hay odontogramas registrados.
+  </div>
+
+  <!-- Crear nuevo odontograma: selector de paciente -->
+  <div *ngIf="creando && !pacienteSeleccionado" class="selector-paciente">
+    <h3>Selecciona un paciente</h3>
+    <select [(ngModel)]="pacienteSeleccionado">
+      <option [ngValue]="null">-- Selecciona un paciente --</option>
+      <option *ngFor="let paciente of pacientes" [ngValue]="paciente">{{ paciente.nombre }}</option>
+    </select>
+    <button class="btn-secondary" (click)="cancelar()">Cancelar</button>
+  </div>
+
+  <!-- Crear nuevo odontograma: formulario -->
+  <div *ngIf="creando && pacienteSeleccionado">
+    <app-odontograma [paciente]="pacienteSeleccionado" (odontogramaGuardado)="onOdontogramaGuardado($event)"></app-odontograma>
+    <button class="btn-secondary" (click)="cancelar()">Cancelar</button>
+  </div>
+
+  <!-- Ver odontograma -->
+  <div *ngIf="viendo && odontogramaSeleccionado && pacienteSeleccionado">
+    <app-odontograma [paciente]="pacienteSeleccionado" [odontogramaInput]="odontogramaSeleccionado" [modoSoloLectura]="true"></app-odontograma>
+    <button class="btn-secondary" (click)="cancelar()">Volver</button>
+  </div>
+
+  <!-- Editar odontograma -->
+  <div *ngIf="editando && odontogramaSeleccionado && pacienteSeleccionado">
+    <app-odontograma [paciente]="pacienteSeleccionado" [odontogramaInput]="odontogramaSeleccionado" (odontogramaGuardado)="onOdontogramaGuardado($event)"></app-odontograma>
+    <button class="btn-secondary" (click)="cancelar()">Cancelar</button>
+  </div>
+</div> 

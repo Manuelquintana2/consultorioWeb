@@ -118,6 +118,28 @@ class PostgresDatabase {
                 FOREIGN KEY (paciente_uid) REFERENCES pacientes(uid) ON DELETE CASCADE,
                 FOREIGN KEY (especialista_uid) REFERENCES especialistas(uid) ON DELETE CASCADE
             );
+
+            -- Tabla de piezas de odontograma
+            CREATE TABLE IF NOT EXISTS piezas_odontograma (
+                id SERIAL PRIMARY KEY,
+                odontograma_id INTEGER NOT NULL,
+                numero_pieza INTEGER NOT NULL,
+                simbolo VARCHAR(10),
+                simbolo_color VARCHAR(20),
+                FOREIGN KEY (odontograma_id) REFERENCES odontogramas(id) ON DELETE CASCADE
+            );
+
+            -- Tabla de partes de pieza
+            CREATE TABLE IF NOT EXISTS partes_pieza (
+                id SERIAL PRIMARY KEY,
+                pieza_odontograma_id INTEGER NOT NULL,
+                nombre_parte VARCHAR(255) NOT NULL,
+                estado VARCHAR(255) NOT NULL,
+                tratamiento TEXT,
+                color VARCHAR(50),
+                observaciones TEXT,
+                FOREIGN KEY (pieza_odontograma_id) REFERENCES piezas_odontograma(id) ON DELETE CASCADE
+            );
         `;
 
         await this.pool.query(createTablesQuery);
@@ -125,6 +147,9 @@ class PostgresDatabase {
 
         // Crear índices
         await this.createIndexes();
+        
+        // Ejecutar migraciones
+        await this.runMigrations();
     }
 
     async createIndexes() {
@@ -141,6 +166,20 @@ class PostgresDatabase {
             await this.pool.query(index);
         }
         console.log('Índices creados exitosamente');
+    }
+
+    async runMigrations() {
+        try {
+            // Migración: Agregar campos simbolo y simbolo_color a piezas_odontograma
+            await this.pool.query(`
+                ALTER TABLE piezas_odontograma 
+                ADD COLUMN IF NOT EXISTS simbolo VARCHAR(10),
+                ADD COLUMN IF NOT EXISTS simbolo_color VARCHAR(20)
+            `);
+            console.log('Migraciones ejecutadas exitosamente');
+        } catch (error) {
+            console.error('Error al ejecutar migraciones:', error);
+        }
     }
 
     async insertInitialData() {
@@ -197,6 +236,97 @@ class PostgresDatabase {
     async close() {
         await this.pool.end();
         console.log('Conexión a PostgreSQL cerrada');
+    }
+
+    // ODONTOGRAMAS RELACIONAL
+
+    // Crear odontograma
+    async crearOdontograma(paciente_uid, especialista_uid, observaciones) {
+        const result = await this.pool.query(
+            'INSERT INTO odontogramas (paciente_uid, especialista_uid, observaciones) VALUES ($1, $2, $3) RETURNING *',
+            [paciente_uid, especialista_uid, observaciones]
+        );
+        return result.rows[0];
+    }
+
+    // Crear pieza de odontograma
+    async crearPiezaOdontograma(odontograma_id, numero_pieza, simbolo = '', simbolo_color = '') {
+        const result = await this.pool.query(
+            'INSERT INTO piezas_odontograma (odontograma_id, numero_pieza, simbolo, simbolo_color) VALUES ($1, $2, $3, $4) RETURNING *',
+            [odontograma_id, numero_pieza, simbolo, simbolo_color]
+        );
+        return result.rows[0];
+    }
+
+    // Crear parte de pieza
+    async crearPartePieza(pieza_odontograma_id, nombre_parte, estado, tratamiento, color, observaciones) {
+        const result = await this.pool.query(
+            'INSERT INTO partes_pieza (pieza_odontograma_id, nombre_parte, estado, tratamiento, color, observaciones) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [pieza_odontograma_id, nombre_parte, estado, tratamiento, color, observaciones]
+        );
+        return result.rows[0];
+    }
+
+    // Obtener odontograma completo (con piezas y partes)
+    async obtenerOdontogramaCompleto(id) {
+        const odontograma = await this.get('SELECT * FROM odontogramas WHERE id = $1', [id]);
+        if (!odontograma) return null;
+        const piezas = await this.query('SELECT * FROM piezas_odontograma WHERE odontograma_id = $1', [id]);
+        for (const pieza of piezas) {
+            // Normalizar nombres de campos para el frontend
+            pieza.simboloColor = pieza.simbolo_color;
+            delete pieza.simbolo_color;
+            
+            pieza.partes = await this.query('SELECT * FROM partes_pieza WHERE pieza_odontograma_id = $1', [pieza.id]);
+        }
+        odontograma.piezas = piezas;
+        return odontograma;
+    }
+
+    // Actualizar observaciones de odontograma
+    async actualizarOdontograma(id, observaciones) {
+        await this.pool.query('UPDATE odontogramas SET observaciones = $1 WHERE id = $2', [observaciones, id]);
+    }
+
+    // Eliminar odontograma (borrado en cascada)
+    async eliminarOdontograma(id) {
+        await this.pool.query('DELETE FROM odontogramas WHERE id = $1', [id]);
+    }
+
+    // Eliminar todas las piezas de un odontograma (para actualización)
+    async eliminarPiezasOdontograma(odontograma_id) {
+        await this.pool.query('DELETE FROM piezas_odontograma WHERE odontograma_id = $1', [odontograma_id]);
+    }
+
+    // Actualizar pieza de odontograma
+    async actualizarPiezaOdontograma(pieza_id, simbolo, simbolo_color) {
+        await this.pool.query(
+            'UPDATE piezas_odontograma SET simbolo = $1, simbolo_color = $2 WHERE id = $3',
+            [simbolo, simbolo_color, pieza_id]
+        );
+    }
+
+    // Actualizar partes de una pieza
+    async actualizarPartesPieza(pieza_id, partes) {
+        // Eliminar partes existentes
+        await this.pool.query('DELETE FROM partes_pieza WHERE pieza_odontograma_id = $1', [pieza_id]);
+        
+        // Crear nuevas partes
+        for (const parte of partes) {
+            await this.crearPartePieza(
+                pieza_id,
+                parte.nombre_parte,
+                parte.estado,
+                parte.tratamiento,
+                parte.color,
+                parte.observaciones
+            );
+        }
+    }
+
+    // Eliminar una pieza específica
+    async eliminarPiezaOdontograma(pieza_id) {
+        await this.pool.query('DELETE FROM piezas_odontograma WHERE id = $1', [pieza_id]);
     }
 }
 

@@ -1,0 +1,94 @@
+<div *ngIf="odontograma" class="odontograma-container">
+  <h2>Odontograma</h2>
+  <div class="odontograma-tipo-selector" *ngIf="!modoSoloLectura">
+    <label>
+      <input type="radio" name="tipo" value="adulto" [(ngModel)]="tipo" (change)="cambiarTipo('adulto')"> Adulto
+    </label>
+    <label>
+      <input type="radio" name="tipo" value="nino" [(ngModel)]="tipo" (change)="cambiarTipo('nino')"> Niño
+    </label>
+  </div>
+  <div class="datos-paciente">
+    <div><label>Apellido y Nombres:</label> <span>{{ paciente?.nombre }}</span></div>
+    <div><label>Domicilio:</label> <span>{{ paciente?.domicilio }}</span></div>
+    <div><label>Tel:</label> <span>{{ paciente?.telefono }}</span></div>
+    <div><label>Localidad:</label> <span>{{ paciente?.localidad || '' }}</span></div>
+  </div>
+
+  <div class="odontograma-svg">
+    <!-- Fila superior -->
+    <div class="odontograma-fila">
+      <svg *ngFor="let pieza of odontograma.piezas[0]; let i = index" width="45" height="45">
+        <polygon points="8,8 32,8 26,16 14,16" [attr.fill]="pieza.partes[0].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(0, i, 0)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <polygon points="32,8 32,32 26,24 26,16" [attr.fill]="pieza.partes[1].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(0, i, 1)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <polygon points="32,32 8,32 14,24 26,24" [attr.fill]="pieza.partes[2].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(0, i, 2)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <polygon points="8,32 14,24 14,16 8,8" [attr.fill]="pieza.partes[3].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(0, i, 3)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <polygon points="14,16 26,16 26,24 14,24" [attr.fill]="pieza.partes[4].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(0, i, 4)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <text *ngIf="pieza.simbolo" x="20" y="30" font-size="38" text-anchor="middle" [attr.fill]="pieza.simboloColor ? getSimboloColor(pieza.simbolo, pieza.simboloColor) : getSimboloColor(pieza.simbolo)">{{ pieza.simbolo }}</text>
+        <text x="20" y="7" font-size="9" text-anchor="middle">{{ pieza.numero_pieza }}</text>
+        <!-- Círculo para símbolos más pequeño y solo en el centro -->
+        <circle cx="20" cy="20" r="6" fill="transparent" (click)="!modoSoloLectura && aplicarSimboloPieza(0, i)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+      </svg>
+    </div>
+    <!-- Fila inferior -->
+    <div class="odontograma-fila">
+      <svg *ngFor="let pieza of odontograma.piezas[1]; let i = index" width="45" height="45">
+        <polygon points="8,8 32,8 26,16 14,16" [attr.fill]="pieza.partes[0].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(1, i, 0)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <polygon points="32,8 32,32 26,24 26,16" [attr.fill]="pieza.partes[1].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(1, i, 1)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <polygon points="32,32 8,32 14,24 26,24" [attr.fill]="pieza.partes[2].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(1, i, 2)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <polygon points="8,32 14,24 14,16 8,8" [attr.fill]="pieza.partes[3].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(1, i, 3)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <polygon points="14,16 26,16 26,24 14,24" [attr.fill]="pieza.partes[4].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(1, i, 4)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <text *ngIf="pieza.simbolo" x="20" y="30" font-size="38" text-anchor="middle" [attr.fill]="pieza.simboloColor ? getSimboloColor(pieza.simbolo, pieza.simboloColor) : getSimboloColor(pieza.simbolo)">{{ pieza.simbolo }}</text>
+        <text x="20" y="7" font-size="9" text-anchor="middle">{{ pieza.numero_pieza }}</text>
+        <!-- Círculo para símbolos más pequeño y solo en el centro -->
+        <circle cx="20" cy="20" r="6" fill="transparent" (click)="!modoSoloLectura && aplicarSimboloPieza(1, i)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+      </svg>
+    </div>
+  </div>
+  <div class="odontograma-menu" *ngIf="!modoSoloLectura">
+    <div class="color-menu-section">
+      <div class="color-menu-title">Colores</div>
+      <div class="color-options-row">
+        <div *ngFor="let color of colorMenu" class="color-option" [ngStyle]="{'background': color.color, 'border': colorActivo === color.color ? '2px solid #3949ab' : '1px solid #eee'}" (click)="seleccionarColorActivo(color.color)"></div>
+        <div class="color-option limpiar" (click)="limpiarColorActivo()">Limpiar</div>
+      </div>
+    </div>
+    <div class="color-menu-section">
+      <div class="color-menu-title">Símbolos/Estados</div>
+      <div class="symbol-options-row">
+        <div class="symbol-option" [class.activo]="simboloActivo?.simbolo === 'x' && simboloActivo?.color === 'azul'" (click)="seleccionarSimboloActivo('x', 'azul')">x (Azul)</div>
+        <div class="symbol-option" [class.activo]="simboloActivo?.simbolo === '=' && simboloActivo?.color === 'azul'" (click)="seleccionarSimboloActivo('=', 'azul')">= (Azul)</div>
+        <div class="symbol-option" [class.activo]="simboloActivo?.simbolo === 'x' && simboloActivo?.color === 'rojo'" (click)="seleccionarSimboloActivo('x', 'rojo')">x (Roja)</div>
+        <div class="symbol-option" [class.activo]="simboloActivo?.simbolo === '\u25a1' && simboloActivo?.color === 'gris'" (click)="seleccionarSimboloActivo('\u25a1', 'gris')">□ Prótesis fija</div>
+        <div class="symbol-option" [class.activo]="simboloActivo?.simbolo === '\u25a1' && simboloActivo?.color === 'naranja'" (click)="seleccionarSimboloActivo('\u25a1', 'naranja')">□ Prótesis removible</div>
+        <div class="symbol-option" [class.activo]="simboloActivo?.simbolo === '\u25cb' && simboloActivo?.color === 'negro'" (click)="seleccionarSimboloActivo('\u25cb', 'negro')">○ Coronas</div>
+        <div class="symbol-option limpiar" (click)="limpiarSimboloActivo()">Limpiar símbolo</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="observaciones" *ngIf="!modoSoloLectura">
+    <label>Observaciones:</label>
+    <textarea [(ngModel)]="odontograma.observaciones"></textarea>
+  </div>
+  <div class="observaciones" *ngIf="modoSoloLectura && odontograma.observaciones">
+    <label>Observaciones:</label>
+    <div class="observaciones-texto">{{ odontograma.observaciones }}</div>
+  </div>
+
+  <div class="leyenda">
+    <h4>REFERENCIAS</h4>
+    <ul>
+      <li><span style="color:red;">Rojo</span>: Prestaciones existentes</li>
+      <li><span style="color:blue;">Azul</span>: Prestaciones requeridas</li>
+      <li> x (Azul): p. no erupcionada</li>
+      <li> = (Azul): Extracción</li>
+      <li> x (Roja): Pieza ausente</li>
+      <li>□ Prótesis fija</li>
+      <li>□ Prótesis removible</li>
+      <li>○ Coronas</li>
+    </ul>
+  </div>
+
+  <button *ngIf="!modoSoloLectura" (click)="guardarOdontograma()" [disabled]="loading">Guardar Odontograma</button>
+</div> 

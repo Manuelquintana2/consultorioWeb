@@ -18,23 +18,10 @@ router.get('/', async (req, res) => {
             WHERE o.especialista_uid = $1
             ORDER BY o.fecha_creacion DESC
         `, [req.user.uid]);
-
-        // Parsear los arrays JSON de dientes
-        const odontogramasParsed = odontogramas.map(odo => ({
-            ...odo,
-            dientes: odo.dientes ? JSON.parse(odo.dientes) : []
-        }));
-
-        res.json({
-            success: true,
-            data: odontogramasParsed
-        });
+        res.json({ success: true, data: odontogramas });
     } catch (error) {
         console.error('Error al obtener odontogramas:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error interno del servidor'
-        });
+        res.status(500).json({ success: false, message: 'Error interno del servidor' });
     }
 });
 
@@ -83,165 +70,128 @@ router.get('/paciente/:paciente_uid', async (req, res) => {
     }
 });
 
-// Obtener odontograma por ID
+// Obtener odontograma completo por ID
 router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-
-        const odontograma = await database.get(`
-            SELECT o.*, p.nombre as paciente_nombre, p.telefono as paciente_telefono
-            FROM odontogramas o
-            JOIN pacientes p ON o.paciente_uid = p.uid
-            WHERE o.id = $1 AND o.especialista_uid = $2
-        `, [id, req.user.uid]);
-
+        const odontograma = await database.obtenerOdontogramaCompleto(id);
         if (!odontograma) {
-            return res.status(404).json({
-                success: false,
-                message: 'Odontograma no encontrado'
-            });
+            return res.status(404).json({ success: false, message: 'Odontograma no encontrado' });
         }
-
-        // Parsear el array JSON de dientes
-        odontograma.dientes = odontograma.dientes ? JSON.parse(odontograma.dientes) : [];
-
-        res.json({
-            success: true,
-            data: odontograma
-        });
+        res.json({ success: true, data: odontograma });
     } catch (error) {
         console.error('Error al obtener odontograma:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error interno del servidor'
-        });
+        res.status(500).json({ success: false, message: 'Error interno del servidor' });
     }
 });
 
-// Crear nuevo odontograma
-router.post('/', [
-    body('paciente_uid').notEmpty().withMessage('Paciente requerido'),
-    body('dientes').isArray().withMessage('Dientes debe ser un array'),
-    body('estado').notEmpty().withMessage('Estado requerido'),
-    body('observaciones').optional().isString()
-], async (req, res) => {
+// Crear nuevo odontograma completo
+router.post('/', async (req, res) => {
     try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                message: 'Datos inválidos',
-                errors: errors.array()
-            });
+        const { paciente_uid, observaciones, piezas } = req.body;
+        if (!paciente_uid || !Array.isArray(piezas)) {
+            return res.status(400).json({ success: false, message: 'Datos inválidos' });
         }
-
-        const { paciente_uid, dientes, estado, observaciones } = req.body;
-
-        // Verificar que el paciente existe y pertenece a odontología
-        const paciente = await database.get(`
-            SELECT seccion FROM pacientes 
-            WHERE uid = $1 AND (seccion = 'Odontologia' OR seccion = 'Ambas')
-        `, [paciente_uid]);
-
-        if (!paciente) {
-            return res.status(404).json({
-                success: false,
-                message: 'Paciente no encontrado'
-            });
+        const odontograma = await database.crearOdontograma(paciente_uid, req.user.uid, observaciones);
+        for (const pieza of piezas) {
+            const piezaDb = await database.crearPiezaOdontograma(
+                odontograma.id,
+                pieza.numero_pieza,
+                pieza.simbolo || '',
+                pieza.simboloColor || ''
+            );
+            for (const parte of pieza.partes) {
+                console.log('Insertando parte:', parte); // DEBUG
+                await database.crearPartePieza(
+                    piezaDb.id,
+                    parte.nombre_parte,
+                    parte.estado,
+                    parte.tratamiento,
+                    parte.color,
+                    parte.observaciones
+                );
+            }
         }
-
-        // Crear odontograma
-        const result = await database.run(`
-            INSERT INTO odontogramas (paciente_uid, especialista_uid, dientes, estado, observaciones) 
-            VALUES ($1, $2, $3, $4, $5)
-        `, [paciente_uid, req.user.uid, JSON.stringify(dientes), estado, observaciones]);
-
-        const odontograma = await database.get(`
-            SELECT o.*, p.nombre as paciente_nombre, p.telefono as paciente_telefono
-            FROM odontogramas o
-            JOIN pacientes p ON o.paciente_uid = p.uid
-            WHERE o.id = $1
-        `, [result.id]);
-
-        // Parsear el array JSON de dientes
-        odontograma.dientes = odontograma.dientes ? JSON.parse(odontograma.dientes) : [];
-
-        res.status(201).json({
-            success: true,
-            message: 'Odontograma creado exitosamente',
-            data: odontograma
-        });
-
+        const odontogramaCompleto = await database.obtenerOdontogramaCompleto(odontograma.id);
+        res.status(201).json({ success: true, message: 'Odontograma creado', data: odontogramaCompleto });
     } catch (error) {
         console.error('Error al crear odontograma:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error interno del servidor'
-        });
+        res.status(500).json({ success: false, message: 'Error interno del servidor' });
     }
 });
 
-// Actualizar odontograma
-router.put('/:id', [
-    body('dientes').isArray().withMessage('Dientes debe ser un array'),
-    body('estado').notEmpty().withMessage('Estado requerido'),
-    body('observaciones').optional().isString()
-], async (req, res) => {
+// Actualizar odontograma completo (observaciones, piezas y partes)
+router.put('/:id', async (req, res) => {
     try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                message: 'Datos inválidos',
-                errors: errors.array()
-            });
-        }
-
         const { id } = req.params;
-        const { dientes, estado, observaciones } = req.body;
-
-        // Verificar que el odontograma existe y pertenece al especialista
-        const odontograma = await database.get(`
-            SELECT * FROM odontogramas 
-            WHERE id = $1 AND especialista_uid = $2
-        `, [id, req.user.uid]);
-
-        if (!odontograma) {
-            return res.status(404).json({
-                success: false,
-                message: 'Odontograma no encontrado'
-            });
+        const { paciente_uid, observaciones, piezas } = req.body;
+        
+        if (!paciente_uid || !Array.isArray(piezas)) {
+            return res.status(400).json({ success: false, message: 'Datos inválidos' });
         }
 
-        // Actualizar odontograma
-        await database.run(`
-            UPDATE odontogramas 
-            SET dientes = $1, estado = $2, observaciones = $3
-            WHERE id = $4
-        `, [JSON.stringify(dientes), estado, observaciones, id]);
+        // Actualizar observaciones del odontograma
+        await database.actualizarOdontograma(id, observaciones);
 
-        const odontogramaActualizado = await database.get(`
-            SELECT o.*, p.nombre as paciente_nombre, p.telefono as paciente_telefono
-            FROM odontogramas o
-            JOIN pacientes p ON o.paciente_uid = p.uid
-            WHERE o.id = $1
-        `, [id]);
-
-        // Parsear el array JSON de dientes
-        odontogramaActualizado.dientes = odontogramaActualizado.dientes ? JSON.parse(odontogramaActualizado.dientes) : [];
-
-        res.json({
-            success: true,
-            message: 'Odontograma actualizado exitosamente',
-            data: odontogramaActualizado
+        // Obtener piezas existentes para comparar
+        const piezasExistentes = await database.query('SELECT * FROM piezas_odontograma WHERE odontograma_id = $1', [id]);
+        
+        // Crear un mapa de piezas existentes por número de pieza
+        const piezasExistentesMap = new Map();
+        piezasExistentes.forEach(pieza => {
+            piezasExistentesMap.set(pieza.numero_pieza, pieza);
         });
 
+        // Procesar cada pieza nueva
+        for (const pieza of piezas) {
+            const piezaExistente = piezasExistentesMap.get(pieza.numero_pieza);
+            
+            if (piezaExistente) {
+                // Actualizar pieza existente
+                await database.actualizarPiezaOdontograma(
+                    piezaExistente.id,
+                    pieza.simbolo || '',
+                    pieza.simboloColor || ''
+                );
+                
+                // Actualizar partes de la pieza
+                await database.actualizarPartesPieza(piezaExistente.id, pieza.partes);
+                
+                // Remover del mapa para saber cuáles no se procesaron
+                piezasExistentesMap.delete(pieza.numero_pieza);
+            } else {
+                // Crear nueva pieza
+                const piezaDb = await database.crearPiezaOdontograma(
+                    id,
+                    pieza.numero_pieza,
+                    pieza.simbolo || '',
+                    pieza.simboloColor || ''
+                );
+                
+                // Crear partes de la nueva pieza
+                for (const parte of pieza.partes) {
+                    await database.crearPartePieza(
+                        piezaDb.id,
+                        parte.nombre_parte,
+                        parte.estado,
+                        parte.tratamiento,
+                        parte.color,
+                        parte.observaciones
+                    );
+                }
+            }
+        }
+
+        // Eliminar piezas que ya no existen en el nuevo odontograma
+        for (const piezaExistente of piezasExistentesMap.values()) {
+            await database.eliminarPiezaOdontograma(piezaExistente.id);
+        }
+
+        const odontogramaCompleto = await database.obtenerOdontogramaCompleto(id);
+        res.json({ success: true, message: 'Odontograma actualizado', data: odontogramaCompleto });
     } catch (error) {
         console.error('Error al actualizar odontograma:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error interno del servidor'
-        });
+        res.status(500).json({ success: false, message: 'Error interno del servidor' });
     }
 });
 
@@ -249,34 +199,11 @@ router.put('/:id', [
 router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-
-        // Verificar que el odontograma existe y pertenece al especialista
-        const odontograma = await database.get(`
-            SELECT * FROM odontogramas 
-            WHERE id = $1 AND especialista_uid = $2
-        `, [id, req.user.uid]);
-
-        if (!odontograma) {
-            return res.status(404).json({
-                success: false,
-                message: 'Odontograma no encontrado'
-            });
-        }
-
-        // Eliminar odontograma
-        await database.run('DELETE FROM odontogramas WHERE id = $1', [id]);
-
-        res.json({
-            success: true,
-            message: 'Odontograma eliminado exitosamente'
-        });
-
+        await database.eliminarOdontograma(id);
+        res.json({ success: true, message: 'Odontograma eliminado' });
     } catch (error) {
         console.error('Error al eliminar odontograma:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error interno del servidor'
-        });
+        res.status(500).json({ success: false, message: 'Error interno del servidor' });
     }
 });
 

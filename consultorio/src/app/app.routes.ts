@@ -29,5 +29,9 @@ export const routes: Routes = [
     loadComponent: () => import('./components/fichas-kinesicas/fichas-kinesicas.component').then(m => m.FichasKinesicasComponent),
     canActivate: [AuthGuard]
   },
+  {
+    path: 'odontogramas',
+    loadComponent: () => import('./components/odontogramas-lista/odontogramas-lista.component').then(m => m.OdontogramasListaComponent)
+  },
   { path: '**', redirectTo: '/login' }
 ];
