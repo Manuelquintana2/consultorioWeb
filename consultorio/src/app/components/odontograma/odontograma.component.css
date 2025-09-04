@@ -268,4 +268,26 @@ button:disabled {
 }
 .symbol-option.limpiar:hover {
   background: #ffeaea;
+}
+
+/* Estilos para mejorar la experiencia de clic */
+.odontograma-fila svg circle {
+  transition: fill 0.2s;
+}
+
+.odontograma-fila svg circle:hover {
+  fill: rgba(57, 73, 171, 0.1);
+}
+
+/* Indicador visual cuando hay color o símbolo activo */
+.color-option[style*='2px solid'] {
+  box-shadow: 0 0 6px #3949ab55;
+  transform: scale(1.1);
+}
+
+.symbol-option.activo {
+  border: 2px solid #3949ab;
+  background: #e3eafc;
+  font-weight: 600;
+  box-shadow: 0 0 6px #3949ab55;
 } 

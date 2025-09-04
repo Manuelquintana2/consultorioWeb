@@ -337,10 +337,14 @@ export class OdontogramaComponent implements OnInit, OnChanges {
 
   seleccionarColorActivo(color: string) {
     this.colorActivo = color;
+    // Limpiar símbolo activo cuando se selecciona un color
+    this.simboloActivo = null;
   }
 
   seleccionarSimboloActivo(simbolo: string, color: string) {
     this.simboloActivo = { simbolo, color };
+    // Limpiar color activo cuando se selecciona un símbolo
+    this.colorActivo = null;
   }
 
   limpiarColorActivo() {
@@ -372,5 +376,25 @@ export class OdontogramaComponent implements OnInit, OnChanges {
     }
     pieza.simbolo = this.simboloActivo.simbolo;
     pieza.simboloColor = this.simboloActivo.color;
+  }
+
+  // Nuevo método para manejar clic en el centro del diente
+  aplicarColorOSimbolo(fila: number, piezaIdx: number, parteIdx: number) {
+    if (this.colorActivo) {
+      // Si hay un color activo, aplicar el color a la parte específica
+      this.odontograma.piezas[fila][piezaIdx].partes[parteIdx].color = this.colorActivo;
+    } else if (this.simboloActivo && this.simboloActivo.simbolo) {
+      // Si hay un símbolo activo, aplicar el símbolo a toda la pieza
+      const pieza = this.odontograma.piezas[fila][piezaIdx];
+      if (pieza.simbolo === this.simboloActivo.simbolo && pieza.simboloColor === this.simboloActivo.color) {
+        // Toggle: si el símbolo es igual, lo removemos
+        pieza.simbolo = '';
+        pieza.simboloColor = '';
+      } else {
+        // Aplicar el nuevo símbolo
+        pieza.simbolo = this.simboloActivo.simbolo;
+        pieza.simboloColor = this.simboloActivo.color;
+      }
+    }
   }
 } 

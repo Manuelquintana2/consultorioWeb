@@ -19,29 +19,29 @@
     <!-- Fila superior -->
     <div class="odontograma-fila">
       <svg *ngFor="let pieza of odontograma.piezas[0]; let i = index" width="45" height="45">
-        <polygon points="8,8 32,8 26,16 14,16" [attr.fill]="pieza.partes[0].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(0, i, 0)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
-        <polygon points="32,8 32,32 26,24 26,16" [attr.fill]="pieza.partes[1].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(0, i, 1)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
-        <polygon points="32,32 8,32 14,24 26,24" [attr.fill]="pieza.partes[2].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(0, i, 2)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
-        <polygon points="8,32 14,24 14,16 8,8" [attr.fill]="pieza.partes[3].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(0, i, 3)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
-        <polygon points="14,16 26,16 26,24 14,24" [attr.fill]="pieza.partes[4].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(0, i, 4)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <polygon points="8,8 32,8 26,16 14,16" [attr.fill]="pieza.partes[0].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorOSimbolo(0, i, 0)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <polygon points="32,8 32,32 26,24 26,16" [attr.fill]="pieza.partes[1].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorOSimbolo(0, i, 1)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <polygon points="32,32 8,32 14,24 26,24" [attr.fill]="pieza.partes[2].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorOSimbolo(0, i, 2)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <polygon points="8,32 14,24 14,16 8,8" [attr.fill]="pieza.partes[3].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorOSimbolo(0, i, 3)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <polygon points="14,16 26,16 26,24 14,24" [attr.fill]="pieza.partes[4].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorOSimbolo(0, i, 4)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
         <text *ngIf="pieza.simbolo" x="20" y="30" font-size="38" text-anchor="middle" [attr.fill]="pieza.simboloColor ? getSimboloColor(pieza.simbolo, pieza.simboloColor) : getSimboloColor(pieza.simbolo)">{{ pieza.simbolo }}</text>
         <text x="20" y="7" font-size="9" text-anchor="middle">{{ pieza.numero_pieza }}</text>
-        <!-- Círculo para símbolos más pequeño y solo en el centro -->
-        <circle cx="20" cy="20" r="6" fill="transparent" (click)="!modoSoloLectura && aplicarSimboloPieza(0, i)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <!-- Círculo solo para el centro, más pequeño para no interferir con otras partes -->
+        <circle cx="20" cy="20" r="8" fill="transparent" (click)="!modoSoloLectura && aplicarColorOSimbolo(0, i, 4)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
       </svg>
     </div>
     <!-- Fila inferior -->
     <div class="odontograma-fila">
       <svg *ngFor="let pieza of odontograma.piezas[1]; let i = index" width="45" height="45">
-        <polygon points="8,8 32,8 26,16 14,16" [attr.fill]="pieza.partes[0].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(1, i, 0)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
-        <polygon points="32,8 32,32 26,24 26,16" [attr.fill]="pieza.partes[1].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(1, i, 1)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
-        <polygon points="32,32 8,32 14,24 26,24" [attr.fill]="pieza.partes[2].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(1, i, 2)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
-        <polygon points="8,32 14,24 14,16 8,8" [attr.fill]="pieza.partes[3].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(1, i, 3)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
-        <polygon points="14,16 26,16 26,24 14,24" [attr.fill]="pieza.partes[4].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorParte(1, i, 4)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <polygon points="8,8 32,8 26,16 14,16" [attr.fill]="pieza.partes[0].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorOSimbolo(1, i, 0)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <polygon points="32,8 32,32 26,24 26,16" [attr.fill]="pieza.partes[1].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorOSimbolo(1, i, 1)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <polygon points="32,32 8,32 14,24 26,24" [attr.fill]="pieza.partes[2].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorOSimbolo(1, i, 2)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <polygon points="8,32 14,24 14,16 8,8" [attr.fill]="pieza.partes[3].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorOSimbolo(1, i, 3)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <polygon points="14,16 26,16 26,24 14,24" [attr.fill]="pieza.partes[4].color || '#fff'" stroke="#333" (click)="!modoSoloLectura && aplicarColorOSimbolo(1, i, 4)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
         <text *ngIf="pieza.simbolo" x="20" y="30" font-size="38" text-anchor="middle" [attr.fill]="pieza.simboloColor ? getSimboloColor(pieza.simbolo, pieza.simboloColor) : getSimboloColor(pieza.simbolo)">{{ pieza.simbolo }}</text>
         <text x="20" y="7" font-size="9" text-anchor="middle">{{ pieza.numero_pieza }}</text>
-        <!-- Círculo para símbolos más pequeño y solo en el centro -->
-        <circle cx="20" cy="20" r="6" fill="transparent" (click)="!modoSoloLectura && aplicarSimboloPieza(1, i)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
+        <!-- Círculo solo para el centro, más pequeño para no interferir con otras partes -->
+        <circle cx="20" cy="20" r="8" fill="transparent" (click)="!modoSoloLectura && aplicarColorOSimbolo(1, i, 4)" [style.cursor]="modoSoloLectura ? 'default' : 'pointer'"/>
       </svg>
     </div>
   </div>
