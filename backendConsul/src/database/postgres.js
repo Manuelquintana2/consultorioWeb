@@ -57,6 +57,7 @@ class PostgresDatabase {
                 domicilio TEXT NOT NULL,
                 telefono VARCHAR(50) NOT NULL,
                 fechaNacimiento DATE NOT NULL,
+                localidad VARCHAR(100),
                 seccion VARCHAR(50) CHECK(seccion IN ('Kinesiologia', 'Odontologia', 'Ambas')) NOT NULL,
                 FOREIGN KEY (uid) REFERENCES usuarios(uid) ON DELETE CASCADE
             );
@@ -113,6 +114,7 @@ class PostgresDatabase {
                 especialista_uid VARCHAR(255) NOT NULL,
                 dientes JSONB NOT NULL,
                 estado VARCHAR(255) NOT NULL,
+                tipo VARCHAR(10) DEFAULT 'adulto' CHECK(tipo IN ('adulto', 'nino')),
                 observaciones TEXT,
                 fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (paciente_uid) REFERENCES pacientes(uid) ON DELETE CASCADE,
@@ -176,6 +178,19 @@ class PostgresDatabase {
                 ADD COLUMN IF NOT EXISTS simbolo VARCHAR(10),
                 ADD COLUMN IF NOT EXISTS simbolo_color VARCHAR(20)
             `);
+            
+            // Migración: Agregar campo tipo a odontogramas
+            await this.pool.query(`
+                ALTER TABLE odontogramas 
+                ADD COLUMN IF NOT EXISTS tipo VARCHAR(10) DEFAULT 'adulto' CHECK(tipo IN ('adulto', 'nino'))
+            `);
+            
+            // Migración: Agregar campo localidad a pacientes
+            await this.pool.query(`
+                ALTER TABLE pacientes 
+                ADD COLUMN IF NOT EXISTS localidad VARCHAR(100)
+            `);
+            
             console.log('Migraciones ejecutadas exitosamente');
         } catch (error) {
             console.error('Error al ejecutar migraciones:', error);
@@ -241,10 +256,10 @@ class PostgresDatabase {
     // ODONTOGRAMAS RELACIONAL
 
     // Crear odontograma
-    async crearOdontograma(paciente_uid, especialista_uid, observaciones) {
+    async crearOdontograma(paciente_uid, especialista_uid, observaciones, tipo = 'adulto') {
         const result = await this.pool.query(
-            'INSERT INTO odontogramas (paciente_uid, especialista_uid, observaciones) VALUES ($1, $2, $3) RETURNING *',
-            [paciente_uid, especialista_uid, observaciones]
+            'INSERT INTO odontogramas (paciente_uid, especialista_uid, observaciones, tipo) VALUES ($1, $2, $3, $4) RETURNING *',
+            [paciente_uid, especialista_uid, observaciones, tipo]
         );
         return result.rows[0];
     }
@@ -284,8 +299,12 @@ class PostgresDatabase {
     }
 
     // Actualizar observaciones de odontograma
-    async actualizarOdontograma(id, observaciones) {
-        await this.pool.query('UPDATE odontogramas SET observaciones = $1 WHERE id = $2', [observaciones, id]);
+    async actualizarOdontograma(id, observaciones, tipo = null) {
+        if (tipo) {
+            await this.pool.query('UPDATE odontogramas SET observaciones = $1, tipo = $2 WHERE id = $3', [observaciones, tipo, id]);
+        } else {
+            await this.pool.query('UPDATE odontogramas SET observaciones = $1 WHERE id = $2', [observaciones, id]);
+        }
     }
 
     // Eliminar odontograma (borrado en cascada)

@@ -18,7 +18,13 @@
             id="nombre" 
             formControlName="nombre" 
             placeholder="Ingrese el nombre completo"
+            pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+"
+            title="Solo se permiten letras y espacios"
           >
+          <div class="error-message" *ngIf="pacienteForm.get('nombre')?.invalid && pacienteForm.get('nombre')?.touched">
+            <span *ngIf="pacienteForm.get('nombre')?.errors?.['required']">El nombre es requerido</span>
+            <span *ngIf="pacienteForm.get('nombre')?.errors?.['pattern']">Solo se permiten letras y espacios</span>
+          </div>
         </div>
         <div class="form-group">
           <label for="obraSocial">Obra Social *</label>
@@ -27,7 +33,11 @@
             id="obraSocial" 
             formControlName="obraSocial" 
             placeholder="Ingrese la obra social"
+            style="text-transform: uppercase;"
           >
+          <div class="error-message" *ngIf="pacienteForm.get('obraSocial')?.invalid && pacienteForm.get('obraSocial')?.touched">
+            <span *ngIf="pacienteForm.get('obraSocial')?.errors?.['required']">La obra social es requerida</span>
+          </div>
         </div>
       </div>
 
@@ -38,8 +48,14 @@
             type="tel" 
             id="telefono" 
             formControlName="telefono" 
-            placeholder="Ingrese el teléfono"
+            placeholder="Ingrese el teléfono (10-11 dígitos)"
+            pattern="[0-9]{10,11}"
+            title="Ingrese entre 10 y 11 dígitos numéricos"
           >
+          <div class="error-message" *ngIf="pacienteForm.get('telefono')?.invalid && pacienteForm.get('telefono')?.touched">
+            <span *ngIf="pacienteForm.get('telefono')?.errors?.['required']">El teléfono es requerido</span>
+            <span *ngIf="pacienteForm.get('telefono')?.errors?.['pattern']">Ingrese entre 10 y 11 dígitos numéricos</span>
+          </div>
         </div>
         <div class="form-group">
           <label for="fechaNacimiento">Fecha de Nacimiento *</label>
@@ -51,14 +67,30 @@
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="domicilio">Domicilio *</label>
-        <input 
-          type="text" 
-          id="domicilio" 
-          formControlName="domicilio" 
-          placeholder="Ingrese el domicilio completo"
-        >
+      <div class="form-row">
+        <div class="form-group">
+          <label for="domicilio">Domicilio *</label>
+          <input 
+            type="text" 
+            id="domicilio" 
+            formControlName="domicilio" 
+            placeholder="Ingrese el domicilio completo"
+          >
+        </div>
+        <div class="form-group">
+          <label for="localidad">Localidad</label>
+          <input 
+            type="text" 
+            id="localidad" 
+            formControlName="localidad" 
+            placeholder="Ingrese la localidad"
+            pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*"
+            title="Solo se permiten letras y espacios"
+          >
+          <div class="error-message" *ngIf="pacienteForm.get('localidad')?.invalid && pacienteForm.get('localidad')?.touched">
+            Solo se permiten letras y espacios
+          </div>
+        </div>
       </div>
 
       <div class="form-group">
@@ -103,7 +135,7 @@
           type="text" 
           id="filtroPacientes" 
           [(ngModel)]="filtroPacientes" 
-          placeholder="Buscar por nombre, obra social, teléfono, domicilio..."
+          placeholder="Buscar por nombre, obra social, teléfono, domicilio, localidad..."
           class="filtro-input-field"
         >
       </div>
@@ -126,6 +158,7 @@
           <p><strong>Obra Social:</strong> {{ paciente.obrasocial }}</p>
           <p><strong>Teléfono:</strong> {{ paciente.telefono }}</p>
           <p><strong>Domicilio:</strong> {{ paciente.domicilio }}</p>
+          <p><strong>Localidad:</strong> {{ paciente.localidad || 'No especificada' }}</p>
           <p><strong>Fecha Nac.:</strong> {{ paciente.fechanacimiento | date:'dd/MM/yyyy' }}</p>
         </div>
 

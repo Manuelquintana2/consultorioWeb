@@ -27,17 +27,35 @@ export class PacientesComponent implements OnInit {
     private fb: FormBuilder
   ) {
     this.pacienteForm = this.fb.group({
-      nombre: ['', [Validators.required]],
+      nombre: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)]],
       obraSocial: ['', [Validators.required]],
       domicilio: ['', [Validators.required]],
-      telefono: ['', [Validators.required]],
+      telefono: ['', [Validators.required, Validators.pattern(/^[0-9]{10,11}$/)]],
       fechaNacimiento: ['', [Validators.required]],
+      localidad: ['', [Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/)]],
       seccion: ['', [Validators.required]]
     });
   }
 
   ngOnInit(): void {
     this.cargarPacientes();
+    
+    // Convertir obra social a mayúsculas automáticamente
+    this.pacienteForm.get('obraSocial')?.valueChanges.subscribe(value => {
+      if (value) {
+        this.pacienteForm.get('obraSocial')?.setValue(value.toUpperCase(), { emitEvent: false });
+      }
+    });
+    
+    // Validar que el teléfono solo contenga números
+    this.pacienteForm.get('telefono')?.valueChanges.subscribe(value => {
+      if (value) {
+        const soloNumeros = value.replace(/[^0-9]/g, '');
+        if (soloNumeros !== value) {
+          this.pacienteForm.get('telefono')?.setValue(soloNumeros, { emitEvent: false });
+        }
+      }
+    });
   }
 
   cargarPacientes(): void {
@@ -115,6 +133,7 @@ export class PacientesComponent implements OnInit {
       domicilio: paciente.domicilio,
       telefono: paciente.telefono,
       fechaNacimiento: paciente.fechanacimiento,
+      localidad: paciente.localidad || '',
       seccion: paciente.seccion
     });
   }

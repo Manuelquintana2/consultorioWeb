@@ -65,11 +65,14 @@ router.get('/:uid', async (req, res) => {
 
 // Crear nuevo paciente
 router.post('/', [
-    body('nombre').notEmpty().withMessage('Nombre requerido'),
+    body('nombre').notEmpty().withMessage('Nombre requerido')
+        .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/).withMessage('Nombre solo puede contener letras y espacios'),
     body('obraSocial').notEmpty().withMessage('Obra social requerida'),
     body('domicilio').notEmpty().withMessage('Domicilio requerido'),
-    body('telefono').notEmpty().withMessage('Teléfono requerido'),
+    body('telefono').notEmpty().withMessage('Teléfono requerido')
+        .matches(/^[0-9]{10,11}$/).withMessage('Teléfono debe tener entre 10 y 11 dígitos numéricos'),
     body('fechaNacimiento').isISO8601().withMessage('Fecha de nacimiento inválida'),
+    body('localidad').optional().matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/).withMessage('Localidad solo puede contener letras y espacios'),
     body('seccion').isIn(['Kinesiologia', 'Odontologia', 'Ambas']).withMessage('Sección inválida')
 ], async (req, res) => {
     try {
@@ -82,7 +85,10 @@ router.post('/', [
             });
         }
 
-        const { nombre, obraSocial, domicilio, telefono, fechaNacimiento, seccion } = req.body;
+        const { nombre, obraSocial, domicilio, telefono, fechaNacimiento, localidad, seccion } = req.body;
+        
+        // Convertir obra social a mayúsculas
+        const obraSocialUpper = obraSocial.toUpperCase();
 
         // Verificar que el especialista pueda crear pacientes de esta sección
         if (seccion !== req.especialista.especialidad && seccion !== 'Ambas') {
@@ -102,9 +108,9 @@ router.post('/', [
 
         // Crear paciente
         await database.run(`
-            INSERT INTO pacientes (uid, nombre, obraSocial, domicilio, telefono, fechaNacimiento, seccion) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
-        `, [uid, nombre, obraSocial, domicilio, telefono, fechaNacimiento, seccion]);
+            INSERT INTO pacientes (uid, nombre, obraSocial, domicilio, telefono, fechaNacimiento, localidad, seccion) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        `, [uid, nombre, obraSocialUpper, domicilio, telefono, fechaNacimiento, localidad, seccion]);
 
         const paciente = await database.get(`
             SELECT p.*, u.lastLogin 
@@ -130,11 +136,14 @@ router.post('/', [
 
 // Actualizar paciente
 router.put('/:uid', [
-    body('nombre').notEmpty().withMessage('Nombre requerido'),
+    body('nombre').notEmpty().withMessage('Nombre requerido')
+        .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/).withMessage('Nombre solo puede contener letras y espacios'),
     body('obraSocial').notEmpty().withMessage('Obra social requerida'),
     body('domicilio').notEmpty().withMessage('Domicilio requerido'),
-    body('telefono').notEmpty().withMessage('Teléfono requerido'),
+    body('telefono').notEmpty().withMessage('Teléfono requerido')
+        .matches(/^[0-9]{10,11}$/).withMessage('Teléfono debe tener entre 10 y 11 dígitos numéricos'),
     body('fechaNacimiento').isISO8601().withMessage('Fecha de nacimiento inválida'),
+    body('localidad').optional().matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/).withMessage('Localidad solo puede contener letras y espacios'),
     body('seccion').isIn(['Kinesiologia', 'Odontologia', 'Ambas']).withMessage('Sección inválida')
 ], async (req, res) => {
     try {
@@ -147,8 +156,11 @@ router.put('/:uid', [
             });
         }
 
-        const { nombre, obraSocial, domicilio, telefono, fechaNacimiento, seccion } = req.body;
+        const { nombre, obraSocial, domicilio, telefono, fechaNacimiento, localidad, seccion } = req.body;
         const { uid } = req.params;
+        
+        // Convertir obra social a mayúsculas
+        const obraSocialUpper = obraSocial.toUpperCase();
 
         // Verificar que el paciente existe y pertenece a la especialidad del especialista
         const pacienteExistente = await database.get(`
@@ -174,9 +186,9 @@ router.put('/:uid', [
         // Actualizar paciente
         await database.run(`
             UPDATE pacientes 
-            SET nombre = $1, obraSocial = $2, domicilio = $3, telefono = $4, fechaNacimiento = $5, seccion = $6
-            WHERE uid = $7
-        `, [nombre, obraSocial, domicilio, telefono, fechaNacimiento, seccion, uid]);
+            SET nombre = $1, obraSocial = $2, domicilio = $3, telefono = $4, fechaNacimiento = $5, localidad = $6, seccion = $7
+            WHERE uid = $8
+        `, [nombre, obraSocialUpper, domicilio, telefono, fechaNacimiento, localidad, seccion, uid]);
 
         const paciente = await database.get(`
             SELECT p.*, u.lastLogin 

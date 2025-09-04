@@ -85,14 +85,18 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Crear nuevo odontograma completo
+// Crear nuevo odontograma (solo piezas modificadas)
 router.post('/', async (req, res) => {
     try {
-        const { paciente_uid, observaciones, piezas } = req.body;
+        const { paciente_uid, observaciones, piezas, tipo } = req.body;
         if (!paciente_uid || !Array.isArray(piezas)) {
             return res.status(400).json({ success: false, message: 'Datos inválidos' });
         }
-        const odontograma = await database.crearOdontograma(paciente_uid, req.user.uid, observaciones);
+        
+        // Crear odontograma con tipo
+        const odontograma = await database.crearOdontograma(paciente_uid, req.user.uid, observaciones, tipo || 'adulto');
+        
+        // Solo procesar piezas que tienen modificaciones
         for (const pieza of piezas) {
             const piezaDb = await database.crearPiezaOdontograma(
                 odontograma.id,
@@ -100,18 +104,21 @@ router.post('/', async (req, res) => {
                 pieza.simbolo || '',
                 pieza.simboloColor || ''
             );
+            
+            // Solo crear partes que tienen datos
             for (const parte of pieza.partes) {
                 console.log('Insertando parte:', parte); // DEBUG
                 await database.crearPartePieza(
                     piezaDb.id,
                     parte.nombre_parte,
-                    parte.estado,
-                    parte.tratamiento,
-                    parte.color,
-                    parte.observaciones
+                    parte.estado || '',
+                    parte.tratamiento || '',
+                    parte.color || '',
+                    parte.observaciones || ''
                 );
             }
         }
+        
         const odontogramaCompleto = await database.obtenerOdontogramaCompleto(odontograma.id);
         res.status(201).json({ success: true, message: 'Odontograma creado', data: odontogramaCompleto });
     } catch (error) {
@@ -120,18 +127,18 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Actualizar odontograma completo (observaciones, piezas y partes)
+// Actualizar odontograma (solo piezas modificadas)
 router.put('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { paciente_uid, observaciones, piezas } = req.body;
+        const { paciente_uid, observaciones, piezas, tipo } = req.body;
         
         if (!paciente_uid || !Array.isArray(piezas)) {
             return res.status(400).json({ success: false, message: 'Datos inválidos' });
         }
 
-        // Actualizar observaciones del odontograma
-        await database.actualizarOdontograma(id, observaciones);
+        // Actualizar observaciones y tipo del odontograma
+        await database.actualizarOdontograma(id, observaciones, tipo);
 
         // Obtener piezas existentes para comparar
         const piezasExistentes = await database.query('SELECT * FROM piezas_odontograma WHERE odontograma_id = $1', [id]);
@@ -142,7 +149,7 @@ router.put('/:id', async (req, res) => {
             piezasExistentesMap.set(pieza.numero_pieza, pieza);
         });
 
-        // Procesar cada pieza nueva
+        // Procesar cada pieza modificada
         for (const pieza of piezas) {
             const piezaExistente = piezasExistentesMap.get(pieza.numero_pieza);
             
@@ -154,13 +161,13 @@ router.put('/:id', async (req, res) => {
                     pieza.simboloColor || ''
                 );
                 
-                // Actualizar partes de la pieza
+                // Actualizar partes de la pieza (solo las que tienen datos)
                 await database.actualizarPartesPieza(piezaExistente.id, pieza.partes);
                 
                 // Remover del mapa para saber cuáles no se procesaron
                 piezasExistentesMap.delete(pieza.numero_pieza);
             } else {
-                // Crear nueva pieza
+                // Crear nueva pieza solo si tiene modificaciones
                 const piezaDb = await database.crearPiezaOdontograma(
                     id,
                     pieza.numero_pieza,
@@ -168,15 +175,15 @@ router.put('/:id', async (req, res) => {
                     pieza.simboloColor || ''
                 );
                 
-                // Crear partes de la nueva pieza
+                // Crear partes de la nueva pieza (solo las que tienen datos)
                 for (const parte of pieza.partes) {
                     await database.crearPartePieza(
                         piezaDb.id,
                         parte.nombre_parte,
-                        parte.estado,
-                        parte.tratamiento,
-                        parte.color,
-                        parte.observaciones
+                        parte.estado || '',
+                        parte.tratamiento || '',
+                        parte.color || '',
+                        parte.observaciones || ''
                     );
                 }
             }

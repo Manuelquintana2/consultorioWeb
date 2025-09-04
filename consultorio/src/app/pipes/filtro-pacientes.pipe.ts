@@ -18,6 +18,7 @@ export class FiltroPacientesPipe implements PipeTransform {
         paciente.obrasocial?.toLowerCase().includes(termino) ||
         paciente.domicilio?.toLowerCase().includes(termino) ||
         paciente.telefono?.includes(termino) ||
+        paciente.localidad?.toLowerCase().includes(termino) ||
         paciente.seccion?.toLowerCase().includes(termino)
       );
     });

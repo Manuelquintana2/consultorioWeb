@@ -438,6 +438,14 @@
   border: 2px dashed var(--gray-300);
 }
 
+/* Mensaje de error */
+.error-message {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .pacientes-container {

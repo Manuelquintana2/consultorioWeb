@@ -100,30 +100,40 @@ export class OdontogramaComponent implements OnInit, OnChanges {
     this.loading = true;
     this.odontogramasService.getOdontogramaPorPaciente(this.paciente.uid).subscribe({
       next: (response) => {
+        console.log('Respuesta del servidor:', response); // DEBUG
         if (response.success && response.data.length > 0) {
           this.odontograma = response.data[0];
+          console.log('Odontograma cargado:', this.odontograma); // DEBUG
           // Detectar tipo según cantidad de dientes
           const piezas = this.odontograma.piezas;
+          console.log('Piezas del odontograma:', piezas); // DEBUG
+          
+          // Usar el tipo del odontograma si está disponible
+          let tipoDetectado = this.odontograma.tipo || 'adulto';
+          
           if (piezas && Array.isArray(piezas)) {
             if (piezas.length === 32) {
-              this.tipo = 'adulto';
-              this.odontograma.piezas = [
-                piezas.slice(0, 16).map(p => ({ ...p, partes: this.normalizarPartes(p) })),
-                piezas.slice(16, 32).map(p => ({ ...p, partes: this.normalizarPartes(p) }))
-              ];
+              tipoDetectado = 'adulto';
             } else if (piezas.length === 20) {
-              this.tipo = 'nino';
-              this.odontograma.piezas = [
-                piezas.slice(0, 10).map(p => ({ ...p, partes: this.normalizarPartes(p) })),
-                piezas.slice(10, 20).map(p => ({ ...p, partes: this.normalizarPartes(p) }))
-              ];
-            } else {
-              this.setOdontogramaBase();
+              tipoDetectado = 'nino';
+            } else if (piezas.length > 0) {
+              // Si hay pocas piezas, detectar por números de pieza
+              const numerosPiezas = piezas.map(p => p.numero_pieza);
+              const tienePiezasNino = numerosPiezas.some(num => num >= 51 && num <= 85);
+              tipoDetectado = tienePiezasNino ? 'nino' : 'adulto';
+              console.log('Detectando tipo por números de pieza:', { numerosPiezas, tienePiezasNino, tipoDetectado }); // DEBUG
             }
+            
+            this.tipo = tipoDetectado;
+            this.odontograma.piezas = this.fusionarConEstructuraBase(piezas, this.tipo);
           } else {
+            // Si no hay piezas, usar estructura base
+            console.log('Usando estructura base - sin piezas'); // DEBUG
             this.setOdontogramaBase();
           }
         } else {
+          // Si no hay odontograma, usar estructura base
+          console.log('Usando estructura base - sin odontograma'); // DEBUG
           this.setOdontogramaBase();
         }
       },
@@ -136,30 +146,33 @@ export class OdontogramaComponent implements OnInit, OnChanges {
     // Normaliza igual que en cargarOdontograma
     const piezas = this.odontogramaInput.piezas;
     console.log('Piezas del input:', piezas); // DEBUG
+    
+    // Usar el tipo del odontograma si está disponible, sino detectar por cantidad
+    let tipoDetectado = this.odontogramaInput.tipo || 'adulto';
+    
     if (piezas && Array.isArray(piezas)) {
       if (piezas.length === 32) {
-        this.tipo = 'adulto';
-        this.odontograma = {
-          ...this.odontogramaInput,
-          piezas: [
-            piezas.slice(0, 16).map(p => ({ ...p, partes: this.normalizarPartes(p) })),
-            piezas.slice(16, 32).map(p => ({ ...p, partes: this.normalizarPartes(p) }))
-          ]
-        };
-        console.log('Odontograma normalizado (adulto):', this.odontograma); // DEBUG
+        tipoDetectado = 'adulto';
       } else if (piezas.length === 20) {
-        this.tipo = 'nino';
-        this.odontograma = {
-          ...this.odontogramaInput,
-          piezas: [
-            piezas.slice(0, 10).map(p => ({ ...p, partes: this.normalizarPartes(p) })),
-            piezas.slice(10, 20).map(p => ({ ...p, partes: this.normalizarPartes(p) }))
-          ]
-        };
-        console.log('Odontograma normalizado (niño):', this.odontograma); // DEBUG
-      } else {
-        this.setOdontogramaBase();
+        tipoDetectado = 'nino';
+      } else if (piezas.length > 0) {
+        // Si hay pocas piezas, detectar por números de pieza
+        const numerosPiezas = piezas.map(p => p.numero_pieza);
+        const tienePiezasNino = numerosPiezas.some(num => num >= 51 && num <= 85);
+        tipoDetectado = tienePiezasNino ? 'nino' : 'adulto';
+        console.log('Detectando tipo por números de pieza:', { numerosPiezas, tienePiezasNino, tipoDetectado }); // DEBUG
       }
+    }
+    
+    this.tipo = tipoDetectado;
+    console.log('Tipo detectado:', this.tipo); // DEBUG
+    
+    if (piezas && Array.isArray(piezas) && piezas.length > 0) {
+      this.odontograma = {
+        ...this.odontogramaInput,
+        piezas: this.fusionarConEstructuraBase(piezas, this.tipo)
+      };
+      console.log('Odontograma normalizado:', this.odontograma); // DEBUG
     } else {
       this.setOdontogramaBase();
     }
@@ -196,10 +209,15 @@ export class OdontogramaComponent implements OnInit, OnChanges {
     
     // Aplanar el array de piezas (de [[fila1],[fila2]] a [..])
     const piezasPlanas = ([] as any[]).concat(...this.odontograma.piezas);
+    
+    // Filtrar solo piezas que tienen modificaciones
+    const piezasModificadas = this.filtrarPiezasModificadas(piezasPlanas);
+    
     const payload = {
       paciente_uid: this.paciente.uid,
       observaciones: this.odontograma.observaciones,
-      piezas: piezasPlanas
+      piezas: piezasModificadas,
+      tipo: this.tipo
     };
 
     // Determinar si es crear nuevo o editar existente
@@ -396,5 +414,104 @@ export class OdontogramaComponent implements OnInit, OnChanges {
         pieza.simboloColor = this.simboloActivo.color;
       }
     }
+  }
+
+  // Método para fusionar datos modificados con estructura base
+  private fusionarConEstructuraBase(piezasModificadas: any[], tipo: 'adulto' | 'nino'): any[][] {
+    console.log('Fusionando con estructura base:', { piezasModificadas, tipo }); // DEBUG
+    
+    // Obtener estructura base según el tipo
+    const estructuraBase = tipo === 'nino' ? 
+      JSON.parse(JSON.stringify(this.piezasBaseNino)) : 
+      JSON.parse(JSON.stringify(this.piezasBaseAdulto));
+    
+    // Si no hay piezas modificadas, devolver estructura base
+    if (!piezasModificadas || piezasModificadas.length === 0) {
+      console.log('No hay piezas modificadas, devolviendo estructura base'); // DEBUG
+      return estructuraBase;
+    }
+    
+    // Crear mapa de piezas modificadas por número de pieza
+    const piezasModificadasMap = new Map();
+    piezasModificadas.forEach(pieza => {
+      piezasModificadasMap.set(pieza.numero_pieza, pieza);
+    });
+    
+    console.log('Mapa de piezas modificadas:', piezasModificadasMap); // DEBUG
+    
+    // Fusionar datos modificados con estructura base
+    const resultado = estructuraBase.map((fila: any[]) => 
+      fila.map(piezaBase => {
+        const piezaModificada = piezasModificadasMap.get(piezaBase.numero_pieza);
+        
+        if (piezaModificada) {
+          console.log(`Fusionando pieza ${piezaBase.numero_pieza}:`, piezaModificada); // DEBUG
+          // Fusionar símbolos
+          const piezaFusionada = {
+            ...piezaBase,
+            simbolo: piezaModificada.simbolo || '',
+            simboloColor: piezaModificada.simboloColor || ''
+          };
+          
+          // Fusionar partes
+          if (piezaModificada.partes && piezaModificada.partes.length > 0) {
+            piezaFusionada.partes = piezaBase.partes.map((parteBase: any) => {
+              const parteModificada = piezaModificada.partes.find((p: any) => 
+                p.nombre_parte === parteBase.nombre_parte
+              );
+              
+              return parteModificada ? {
+                ...parteBase,
+                ...parteModificada
+              } : parteBase;
+            });
+          }
+          
+          return piezaFusionada;
+        }
+        
+        return piezaBase;
+      })
+    );
+    
+    console.log('Resultado de fusión:', resultado); // DEBUG
+    return resultado;
+  }
+
+  // Método para filtrar solo piezas que tienen modificaciones
+  private filtrarPiezasModificadas(piezas: any[]): any[] {
+    return piezas.filter(pieza => {
+      // Verificar si la pieza tiene símbolo
+      const tieneSimbolo = pieza.simbolo && pieza.simbolo.trim() !== '';
+      
+      // Verificar si alguna parte tiene color
+      const tieneColor = pieza.partes && pieza.partes.some((parte: any) => 
+        parte.color && parte.color.trim() !== ''
+      );
+      
+      // Verificar si alguna parte tiene estado, tratamiento u observaciones
+      const tieneDatosAdicionales = pieza.partes && pieza.partes.some((parte: any) => 
+        (parte.estado && parte.estado.trim() !== '') ||
+        (parte.tratamiento && parte.tratamiento.trim() !== '') ||
+        (parte.observaciones && parte.observaciones.trim() !== '')
+      );
+      
+      return tieneSimbolo || tieneColor || tieneDatosAdicionales;
+    }).map(pieza => {
+      // Solo incluir partes que tienen datos
+      const partesModificadas = pieza.partes.filter((parte: any) => 
+        (parte.color && parte.color.trim() !== '') ||
+        (parte.estado && parte.estado.trim() !== '') ||
+        (parte.tratamiento && parte.tratamiento.trim() !== '') ||
+        (parte.observaciones && parte.observaciones.trim() !== '')
+      );
+      
+      return {
+        numero_pieza: pieza.numero_pieza,
+        simbolo: pieza.simbolo || '',
+        simboloColor: pieza.simboloColor || '',
+        partes: partesModificadas
+      };
+    });
   }
 } 
