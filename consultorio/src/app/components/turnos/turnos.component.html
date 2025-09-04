@@ -15,8 +15,12 @@
           <label for="especialista">Especialista *</label>
           <select id="especialista" formControlName="especialista_uid" (change)="onEspecialistaChange()">
             <option value="">Seleccione un especialista</option>
-            <option value="esp_kinesiologa">Kinesióloga</option>
-            <option value="esp_odontologo">Odontólogo</option>
+            @if(isKinesiologo()) {
+              <option value="esp_kinesiologa">Kinesióloga</option>
+            }
+            @if(isOdontologo()) {
+              <option value="esp_odontologo">Odontólogo</option>
+            }
           </select>
         </div>
         <div class="form-group">

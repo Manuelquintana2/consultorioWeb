@@ -7,6 +7,7 @@ import { HorariosService } from '../../services/horarios.service';
 import { FiltroTurnosPipe } from '../../pipes';
 import { Turno } from '../../models';
 import Swal from 'sweetalert2';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-turnos',
@@ -32,7 +33,8 @@ export class TurnosComponent implements OnInit {
     private turnosService: TurnosService,
     private pacientesService: PacientesService,
     private horariosService: HorariosService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private authService: AuthService
   ) {
     this.turnoForm = this.fb.group({
       especialista_uid: ['', [Validators.required]],
@@ -93,14 +95,22 @@ export class TurnosComponent implements OnInit {
 
   onEspecialistaChange(): void {
     if (this.turnoForm.get('fecha')?.value && this.turnoForm.get('especialista_uid')?.value) {
+      console.log('cargando horarios disponibles');
       this.cargarHorariosDisponibles();
     }
+  }
+  isKinesiologo(): boolean {
+    return this.authService.isKinesiologo();
+  }
+  isOdontologo(): boolean {
+    return this.authService.isOdontologo();
   }
 
   cargarHorariosDisponibles(): void {
     const fecha = this.turnoForm.get('fecha')?.value;
     const especialista = this.turnoForm.get('especialista_uid')?.value;
-    
+    console.log('fecha', fecha);
+    console.log('especialista', especialista);
     if (fecha && especialista) {
       this.horariosService.getHorariosDisponibles(fecha).subscribe({
         next: (response) => {
@@ -112,6 +122,7 @@ export class TurnosComponent implements OnInit {
         },
         error: (error) => {
           this.showError('Error al cargar horarios disponibles');
+          this.horariosDisponibles = [];
           console.error('Error al cargar horarios disponibles:', error);
         }
       });
