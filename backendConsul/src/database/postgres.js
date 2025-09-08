@@ -4,10 +4,15 @@ const bcrypt = require('bcryptjs');
 class PostgresDatabase {
     constructor() {
         this.pool = new Pool({
-            connectionString: 'postgresql://neondb_owner:npg_hMg3qznR1Lyk@ep-round-tree-a8ai1ufh-pooler.eastus2.azure.neon.tech/consultorio_db?sslmode=require&channel_binding=require',
-            ssl: {
-                rejectUnauthorized: false
-            }
+            host: 'localhost',
+            port: 5432,
+            database: 'consultorio_db',
+            user: 'postgres',
+            password: 'admin', // Cambia esto por tu contraseña real
+            max: 20,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 2000,
+            
         });
     }
 
@@ -15,7 +20,7 @@ class PostgresDatabase {
         try {
             // Probar conexión
             const client = await this.pool.connect();
-            console.log('Conectado a PostgreSQL en Neon');
+            console.log('Conectado a PostgreSQL en LocalHost');
             client.release();
 
             // Crear tablas

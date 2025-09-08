@@ -109,9 +109,9 @@ router.post('/', [
         }
 
         // Verificar que el especialista tiene horarios para ese día
-        const fechaObj = new Date(fecha);
-        const diaSemana = fechaObj.getDay();
-        const diasSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+        const fechaObj = new Date(fecha); // "2025-09-05"
+        const diaSemana = fechaObj.getUTCDay(); // usar UTC
+        const diasSemana = ['domingo','lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
         const diaColumna = diasSemana[diaSemana];
 
         const horarios = await database.get(`

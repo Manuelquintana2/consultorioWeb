@@ -38,7 +38,7 @@ export class FichasKinesicasComponent implements OnInit {
       estudios: [[]],
       tratamiento: ['', Validators.required],
       sesiones: [[]],
-      observaciones: ['']
+      observaciones: ['', Validators.required]
     });
 
     this.sesionForm = this.fb.group({

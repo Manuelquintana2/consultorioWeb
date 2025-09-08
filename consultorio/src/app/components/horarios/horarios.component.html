@@ -53,7 +53,7 @@
           <div class="horas-seleccionadas">
             <strong>Seleccionadas:</strong> 
             <span *ngIf="horariosForm.get(dia)?.value?.length; else noHoras">
-              {{ horariosForm.get(dia)?.value?.length }} horas
+              {{ horariosForm.get(dia)?.value?.length / 2}} horas
             </span>
             <ng-template #noHoras>
               <span class="no-horas">Ninguna</span>
