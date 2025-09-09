@@ -8,11 +8,12 @@ import { FiltroTurnosPipe } from '../../pipes';
 import { Turno } from '../../models';
 import Swal from 'sweetalert2';
 import { AuthService } from '../../services/auth.service';
+import { FiltroEstadoPipe } from '../../pipes/filtro-estado.pipe';
 
 @Component({
   selector: 'app-turnos',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, FiltroTurnosPipe],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, FiltroTurnosPipe, FiltroEstadoPipe],
   templateUrl: './turnos.component.html',
   styleUrls: ['./turnos.component.css']
 })
@@ -26,8 +27,11 @@ export class TurnosComponent implements OnInit {
   turnoEditando: any = null;
   loading = false;
   filtroTurnos = '';
+  filtroEstado = '';
   fechaSeleccionada = '';
+  fechaSelectedForFilter = '';
   especialistaSeleccionado = '';
+  vistaReducida: boolean = false;
 
   constructor(
     private turnosService: TurnosService,
@@ -51,6 +55,30 @@ export class TurnosComponent implements OnInit {
     this.fechaSeleccionada = new Date().toISOString().split('T')[0];
   }
 
+  onFechaFilterChange(): void {
+    this.fechaSelectedForFilter = this.fechaSeleccionada;
+    this.cargarTurnosPorFecha();
+  }
+
+  cargarTurnosPorFecha(): void {
+    if (this.fechaSelectedForFilter) {
+      this.turnosService.getTurnosPorFecha(this.fechaSelectedForFilter).subscribe({
+        next: (response) => { 
+          if (response.success) {
+            this.turnos = response.data;
+          } else {
+            this.showError('Error al cargar turnos por fecha: ' + response.message);
+          }
+        },
+        error: (error) => {
+          this.showError('Error al cargar turnos por fecha');
+          console.error('Error:', error);
+        }
+      });
+    } else {
+      this.cargarTurnos();
+    }
+  }
   cargarTurnos(): void {
     this.loading = true;
     this.turnosService.getTurnos().subscribe({

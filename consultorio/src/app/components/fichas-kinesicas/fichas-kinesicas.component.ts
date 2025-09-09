@@ -5,11 +5,12 @@ import { FichasKinesicasService } from '../../services/fichas-kinesicas.service'
 import { PacientesService } from '../../services/pacientes.service';
 import { FichaKinesica, SesionKinesica, Paciente } from '../../models';
 import Swal from 'sweetalert2';
+import { FiltroFichasKinesioPipe } from '../../pipes/filtro-fichas-kinesio.pipe';
 
 @Component({
   selector: 'app-fichas-kinesicas',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, FiltroFichasKinesioPipe],
   templateUrl: './fichas-kinesicas.component.html',
   styleUrls: ['./fichas-kinesicas.component.css']
 })
@@ -24,6 +25,7 @@ export class FichasKinesicasComponent implements OnInit {
   selectedFicha: FichaKinesica | null = null;
   loading = false;
   errorMessage = '';
+  filtroPacientes: string = '';
 
   constructor(
     private fichasService: FichasKinesicasService,

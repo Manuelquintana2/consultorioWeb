@@ -70,8 +70,9 @@ export interface SesionKinesica {
 }
 
 export interface Odontograma {
-    paciente_id: number;
+    paciente_uid: string;
     dientes: string[];
     estado: string;
     observaciones: string;
+    fecha_creacion: string;
 } 

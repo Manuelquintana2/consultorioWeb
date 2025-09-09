@@ -479,3 +479,99 @@
     font-size: var(--font-size-2xl);
   }
 } 
+/* Switch reutilizado */
+.vista-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: var(--spacing-md);
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: var(--gray-300);
+  transition: .4s;
+  border-radius: 26px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px; width: 20px;
+  left: 3px; bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: var(--primary-color);
+}
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+.switch-label {
+  font-size: var(--font-size-sm);
+  color: var(--gray-700);
+  font-weight: 500;
+}
+
+/* Vista reducida */
+.paciente-card-reducida {
+  padding: var(--spacing-sm) var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--font-size-sm);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--border-radius-md);
+}
+
+/* Ocultar secciones completas */
+.paciente-card-reducida .paciente-header,
+.paciente-card-reducida .paciente-info,
+.paciente-card-reducida .paciente-actions {
+  display: none !important;
+}
+
+/* Compacto */
+.paciente-mini {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: var(--spacing-md);
+}
+
+.mini-nombre {
+  font-weight: 600;
+  color: var(--gray-900);
+  flex: 2;
+}
+
+.mini-obra {
+  color: var(--gray-600);
+  font-size: var(--font-size-xs);
+  flex: 1;
+  text-align: center;
+}
+
+.mini-seccion {
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: var(--border-radius-md);
+  text-transform: uppercase;
+  white-space: nowrap;
+}

@@ -2,6 +2,19 @@
   <h2>Odontogramas</h2>
   <button class="btn-primary" (click)="nuevoOdontograma()" *ngIf="!creando && !editando && !viendo">Nuevo Odontograma</button>
 
+  <!-- Filtro -->
+    <div class="filtro-section">
+      <div class="filtro-input">
+        <label for="filtroPacientes">Buscar pacientes:</label>
+        <input 
+          type="text" 
+          id="filtroPacientes" 
+          [(ngModel)]="filtroPacientes" 
+          placeholder="Buscar por nombre..."
+          class="filtro-input-field"
+        >
+      </div>
+    </div>
   <!-- Lista de odontogramas existentes -->
   <table *ngIf="!creando && !editando && !viendo && odontogramas.length > 0">
     <thead>
@@ -12,7 +25,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let odo of odontogramas">
+      <tr *ngFor="let odo of odontogramas | filtroOdontogramas:filtroPacientes:pacientes">
         <td>{{ getNombrePaciente(odo.paciente_uid) }}</td>
         <td>{{ odo.fecha_creacion | date:'dd/MM/yyyy' }}</td>
         <td>

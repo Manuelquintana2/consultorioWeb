@@ -21,6 +21,7 @@ export class PacientesComponent implements OnInit {
   pacienteEditando: any = null;
   loading = false;
   filtroPacientes = '';
+  vistaReducida: boolean = false;
 
   constructor(
     private pacientesService: PacientesService,

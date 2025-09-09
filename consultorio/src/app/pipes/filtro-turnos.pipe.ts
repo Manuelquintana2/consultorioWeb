@@ -13,10 +13,6 @@ export class FiltroTurnosPipe implements PipeTransform {
     const termino = filtro.toLowerCase().trim();
     
     return turnos.filter(turno => {
-      // Buscar por fecha
-      const fecha = new Date(turno.fecha).toLocaleDateString('es-ES');
-      if (fecha.includes(termino)) return true;
-      
       // Buscar por hora
       if (turno.hora?.toLowerCase().includes(termino)) return true;
       

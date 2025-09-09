@@ -87,58 +87,95 @@
   </div>
 
   <!-- Lista de Turnos -->
-  <div class="turnos-list" *ngIf="turnos.length > 0">
-    <h3>Lista de Turnos</h3>
-    
-    <!-- Filtro de Turnos -->
-    <div class="filtro-section">
-      <div class="filtro-input">
-        <label for="filtroTurnos">Buscar turnos:</label>
-        <input 
-          type="text" 
-          id="filtroTurnos" 
-          [(ngModel)]="filtroTurnos" 
-          placeholder="Buscar por fecha, paciente, especialista, estado..."
-          class="filtro-input-field"
-        >
-      </div>
+  <!-- Filtro de Turnos -->
+  <div class="filtro-section">
+    <div class="filtro-input">
+      <label for="filtroTurnos">Buscar turnos:</label>
+      <input 
+        type="text" 
+        id="filtroTurnos" 
+        [(ngModel)]="filtroTurnos" 
+        placeholder="Buscar por paciente..."
+        class="filtro-input-field"
+      >
     </div>
-    
+    <div class="filtro-input">
+      <label for="filtroTurnos">Filtro por fecha</label>
+      <input 
+      type="date" 
+      id="filtroFecha" 
+      [(ngModel)]="fechaSelectedForFilter" 
+      class="filtro-input-field" 
+      (change)="cargarTurnosPorFecha()">
+
+    </div>
+    <div class="custom-select-container">
+      <label for="filtroEstado">Filtro por estado</label>
+      <select id="filtroEstado" [(ngModel)]="filtroEstado">
+        <option value="">Todos</option>
+        <option value="activo">Activo</option>
+        <option value="completado">Completado</option>
+        <option value="cancelado">Cancelado</option>
+      </select>
+    </div>
+  </div>
+  <h3>Cantidad de turnos: {{turnos.length}}</h3>
+  <h3>Lista de Turnos</h3>
+  <div class="turnos-list" *ngIf="turnos.length > 0">
     <div class="loading" *ngIf="loading">
       Cargando turnos...
     </div>
+<div class="vista-toggle">
+  <label class="switch">
+    <input type="checkbox" [(ngModel)]="vistaReducida">
+    <span class="slider round"></span>
+  </label>
+  <span class="switch-label">
+    {{ vistaReducida ? 'Vista reducida' : 'Vista completa' }}
+  </span>
+</div>
 
-    <div class="turnos-grid" *ngIf="!loading">
-      <div class="turno-card" *ngFor="let turno of turnos | filtroTurnos:filtroTurnos:pacientes">
-        <div class="turno-header">
-          <h4>{{ getPacienteNombre(turno.paciente_uid) }}</h4>
-          <span class="estado-badge" [class]="getEstadoClass(turno.estado)">
-            {{ turno.estado }}
-          </span>
-        </div>
-        
-        <div class="turno-info">
-          <p><strong>Fecha:</strong> {{ turno.fecha | date:'dd/MM/yyyy' }}</p>
-          <p><strong>Hora:</strong> {{ turno.hora }}</p>
-          <p><strong>Especialista:</strong> 
-            {{ turno.especialista_uid === 'esp_kinesiologa' ? 'Kinesióloga' : 'Odontólogo' }}
-          </p>
-          <p *ngIf="turno.comentario"><strong>Comentario:</strong> {{ turno.comentario }}</p>
-        </div>
-
-        <div class="turno-actions">
-          <button class="btn-edit" (click)="editarTurno(turno)" *ngIf="turno.estado === 'activo'">
-            Editar
-          </button>
-          <button class="btn-cancel" (click)="cancelarTurno(turno.uid)" *ngIf="turno.estado === 'activo'">
-            Cancelar
-          </button>
-          <button class="btn-complete" (click)="completarTurno(turno.uid)" *ngIf="turno.estado === 'activo'">
-            Completar
-          </button>
-        </div>
+<div class="turnos-grid" *ngIf="!loading">
+  <div 
+    class="turno-card" 
+    [ngClass]="{ 'turno-card-reducida': vistaReducida }"
+    *ngFor="let turno of turnos | filtroTurnos:filtroTurnos:pacientes | filtroEstado:filtroEstado:pacientes"
+  >
+    <!-- Vista reducida -->
+    <ng-container *ngIf="vistaReducida; else vistaCompleta">
+      <div class="turno-mini">
+        <span class="mini-paciente">{{ getPacienteNombre(turno.paciente_uid) }}</span>
+        <span class="mini-info">{{ turno.fecha | date:'dd/MM' }} - {{ turno.hora }}</span>
+        <span class="mini-estado estado-badge" [class]="getEstadoClass(turno.estado)">
+          {{ turno.estado }}
+        </span>
       </div>
-    </div>
+    </ng-container>
+
+    <!-- Vista completa -->
+    <ng-template #vistaCompleta>
+      <div class="turno-header">
+        <h4>{{ getPacienteNombre(turno.paciente_uid) }}</h4>
+        <span class="estado-badge" [class]="getEstadoClass(turno.estado)">
+          {{ turno.estado }}
+        </span>
+      </div>
+      <div class="turno-info">
+        <p><strong>Fecha:</strong> {{ turno.fecha | date:'dd/MM/yyyy' }}</p>
+        <p><strong>Hora:</strong> {{ turno.hora }}</p>
+        <p><strong>Especialista:</strong> 
+          {{ turno.especialista_uid === 'esp_kinesiologa' ? 'Kinesióloga' : 'Odontólogo' }}
+        </p>
+        <p *ngIf="turno.comentario"><strong>Comentario:</strong> {{ turno.comentario }}</p>
+      </div>
+      <div class="turno-actions">
+        <button class="btn-edit" (click)="editarTurno(turno)" *ngIf="turno.estado === 'activo'">Editar</button>
+        <button class="btn-cancel" (click)="cancelarTurno(turno.uid)" *ngIf="turno.estado === 'activo'">Cancelar</button>
+        <button class="btn-complete" (click)="completarTurno(turno.uid)" *ngIf="turno.estado === 'activo'">Completar</button>
+      </div>
+    </ng-template>
+  </div>
+</div>
 
     <div class="no-turnos" *ngIf="!loading && turnos.length === 0">
       No hay turnos registrados.

@@ -18,10 +18,23 @@
   <div *ngIf="loading" class="loading">
     <div class="spinner"></div>
   </div>
+  <!-- Filtro -->
+    <div class="filtro-section">
+      <div class="filtro-input">
+        <label for="filtroPacientes">Buscar pacientes:</label>
+        <input 
+          type="text" 
+          id="filtroPacientes" 
+          [(ngModel)]="filtroPacientes" 
+          placeholder="Buscar por nombre..."
+          class="filtro-input-field"
+        >
+      </div>
+    </div>
 
   <!-- Lista de fichas -->
   <div *ngIf="!loading && fichas.length > 0" class="fichas-grid">
-    <div *ngFor="let ficha of fichas" class="ficha-card">
+    <div *ngFor="let ficha of fichas | filtroFichasKinesio:filtroPacientes:pacientes" class="ficha-card">
       <div class="ficha-header">
         <div class="ficha-info">
           <h3 class="ficha-title">

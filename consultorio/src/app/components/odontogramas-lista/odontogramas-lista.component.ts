@@ -5,11 +5,12 @@ import { PacientesService } from '../../services/pacientes.service';
 import { OdontogramaComponent } from '../odontograma/odontograma.component';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
+import { FiltroOdontogramasPipe } from '../../pipes/filtro-odontogramas.pipe';
 
 @Component({
   selector: 'app-odontogramas-lista',
   standalone: true,
-  imports: [CommonModule, OdontogramaComponent, FormsModule],
+  imports: [CommonModule, OdontogramaComponent, FormsModule, FiltroOdontogramasPipe],
   templateUrl: './odontogramas-lista.component.html',
   styleUrls: ['./odontogramas-lista.component.css']
 })
@@ -22,6 +23,7 @@ export class OdontogramasListaComponent implements OnInit {
   viendo = false;
   odontogramaSeleccionado: any = null;
   pacienteSeleccionado: any = null;
+  filtroPacientes: string = '';
 
   constructor(
     private odontogramasService: OdontogramasService,
