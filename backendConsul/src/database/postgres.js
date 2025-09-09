@@ -261,10 +261,12 @@ class PostgresDatabase {
     // ODONTOGRAMAS RELACIONAL
 
     // Crear odontograma
-    async crearOdontograma(paciente_uid, especialista_uid, observaciones, tipo = 'adulto') {
+    async crearOdontograma(paciente_uid, especialista_uid, atenciones, tipo = 'adulto') {
         const result = await this.pool.query(
-            'INSERT INTO odontogramas (paciente_uid, especialista_uid, observaciones, tipo) VALUES ($1, $2, $3, $4) RETURNING *',
-            [paciente_uid, especialista_uid, observaciones, tipo]
+            `INSERT INTO odontogramas (paciente_uid, especialista_uid, atenciones, tipo)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *`,
+            [paciente_uid, especialista_uid, JSON.stringify(atenciones || []), tipo]
         );
         return result.rows[0];
     }
@@ -304,11 +306,17 @@ class PostgresDatabase {
     }
 
     // Actualizar observaciones de odontograma
-    async actualizarOdontograma(id, observaciones, tipo = null) {
+    async actualizarOdontograma(id, atenciones, tipo = null) {
         if (tipo) {
-            await this.pool.query('UPDATE odontogramas SET observaciones = $1, tipo = $2 WHERE id = $3', [observaciones, tipo, id]);
+            await this.pool.query(
+                'UPDATE odontogramas SET atenciones = $1, tipo = $2  WHERE id = $3',
+                [JSON.stringify(atenciones || []), tipo, id]
+            );
         } else {
-            await this.pool.query('UPDATE odontogramas SET observaciones = $1 WHERE id = $2', [observaciones, id]);
+            await this.pool.query(
+                'UPDATE odontogramas SET atenciones = $1  WHERE id = $2',
+                [JSON.stringify(atenciones || []), id]
+            );
         }
     }
 

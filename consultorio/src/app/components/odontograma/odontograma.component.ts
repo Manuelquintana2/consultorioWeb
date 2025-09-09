@@ -19,6 +19,9 @@ export class OdontogramaComponent implements OnInit, OnChanges {
   odontograma: any = null;
   loading = false;
   tipo: 'adulto' | 'nino' = 'adulto';
+  mostrarModalAtencion = false;
+  nuevaAtencion: any = { fecha: '', observaciones: '', presupuesto: null, honorarios: null };
+
 
   // Estructura base de piezas y partes para adultos (32 dientes)
   piezasBaseAdulto = [
@@ -93,6 +96,28 @@ export class OdontogramaComponent implements OnInit, OnChanges {
     } else if (changes['paciente'] && !changes['paciente'].firstChange) {
       this.cargarOdontograma();
     }
+  }
+
+  abrirModalAtencion() {
+    this.nuevaAtencion = {
+      fecha: new Date().toISOString().split('T')[0], // fecha por defecto hoy
+      observaciones: '',
+      presupuesto: null,
+      honorarios: null,
+      numero: (this.odontograma.atenciones?.length || 0) + 1
+    };
+    this.mostrarModalAtencion = true;
+  }
+  cerrarModalAtencion() {
+    this.mostrarModalAtencion = false;
+  }
+
+  agregarAtencion() {
+    if (!this.odontograma.atenciones) {
+      this.odontograma.atenciones = [];
+    }
+    this.odontograma.atenciones.push({ ...this.nuevaAtencion });
+    this.cerrarModalAtencion();
   }
 
   cargarOdontograma(): void {
@@ -217,8 +242,10 @@ export class OdontogramaComponent implements OnInit, OnChanges {
       paciente_uid: this.paciente.uid,
       observaciones: this.odontograma.observaciones,
       piezas: piezasModificadas,
-      tipo: this.tipo
+      tipo: this.tipo,
+      atenciones: this.odontograma.atenciones || []   // 👈 importante
     };
+
 
     // Determinar si es crear nuevo o editar existente
     const esEdicion = this.odontogramaInput && this.odontogramaInput.id;

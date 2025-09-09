@@ -66,16 +66,66 @@
       </div>
     </div>
   </div>
+  <!-- ATENCIONES -->
+<div class="atenciones-section">
+  <h3>Atenciones</h3>
 
-  <div class="observaciones" *ngIf="!modoSoloLectura">
-    <label>Observaciones:</label>
-    <textarea [(ngModel)]="odontograma.observaciones"></textarea>
-  </div>
-  <div class="observaciones" *ngIf="modoSoloLectura && odontograma.observaciones">
-    <label>Observaciones:</label>
-    <div class="observaciones-texto">{{ odontograma.observaciones }}</div>
+  <!-- Listado de atenciones -->
+  <table *ngIf="odontograma.atenciones?.length > 0" class="atenciones-tabla">
+    <thead>
+      <tr>
+        <th>N°</th>
+        <th>Fecha</th>
+        <th>Observaciones</th>
+        <th>Presupuesto</th>
+        <th>Honorarios</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let atencion of odontograma.atenciones">
+        <td>{{ atencion.numero }}</td>
+        <td>{{ atencion.fecha | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ atencion.observaciones }}</td>
+        <td>{{ atencion.presupuesto | currency }}</td>
+        <td>{{ atencion.honorarios | currency }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="odontograma.atenciones?.length === 0">
+    <em>No hay atenciones registradas</em>
   </div>
 
+  <!-- Botón nueva atención -->
+  <button *ngIf="!modoSoloLectura" (click)="abrirModalAtencion()">
+    Nueva atención
+  </button>
+</div>
+
+<!-- MODAL -->
+<div class="modal-backdrop" *ngIf="mostrarModalAtencion">
+  <div class="modal">
+    <h3>Nueva Atención</h3>
+    <form (ngSubmit)="agregarAtencion()">
+      <label>Fecha:</label>
+      <input type="date" [(ngModel)]="nuevaAtencion.fecha" name="fecha" required>
+
+      <label>Observaciones:</label>
+      <textarea [(ngModel)]="nuevaAtencion.observaciones" name="observaciones"></textarea>
+
+      <label>Presupuesto:</label>
+      <input type="number" [(ngModel)]="nuevaAtencion.presupuesto" name="presupuesto">
+
+      <label>Honorarios:</label>
+      <input type="number" [(ngModel)]="nuevaAtencion.honorarios" name="honorarios">
+
+      <div class="modal-actions">
+        <button type="submit">Agregar</button>
+        <button type="button" (click)="cerrarModalAtencion()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
   <div class="leyenda">
     <h4>REFERENCIAS</h4>
     <ul>
