@@ -1,0 +1,29 @@
+<div class="reportes-container">
+  <h2>Gestión de Reportes</h2>
+
+  <!-- Formulario -->
+  <form [formGroup]="reporteForm" (ngSubmit)="agregarReporte()">
+    <textarea formControlName="reporte" placeholder="Escribe un reporte..."></textarea>
+
+    <div class="form-buttons">
+      <button type="submit" class="btn btn-primary" [disabled]="reporteForm.invalid">
+        {{ editMode ? 'Actualizar' : 'Agregar' }} Reporte
+      </button>
+      <button type="button" class="btn btn-primary" *ngIf="editMode" (click)="cancelarEdicion()">Cancelar</button>
+    </div>
+  </form>
+
+  <hr />
+
+  <!-- Listado -->
+  <h3>Listado de Reportes</h3>
+  <ul>
+    <li *ngFor="let r of reportes">
+      <p>{{ r.reporte }}</p>
+      <div class="actions">
+        <button class="btn btn-primary" (click)="editarReporte(r)">Editar</button>
+        <button class="btn btn-primary" (click)="eliminarReporte(r.id)">Eliminar</button>
+      </div>
+    </li>
+  </ul>
+</div>

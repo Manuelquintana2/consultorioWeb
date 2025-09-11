@@ -86,8 +86,8 @@
         <td>{{ atencion.numero }}</td>
         <td>{{ atencion.fecha | date: 'dd/MM/yyyy' }}</td>
         <td>{{ atencion.observaciones }}</td>
-        <td>{{ atencion.presupuesto | currency }}</td>
-        <td>{{ atencion.honorarios | currency }}</td>
+        <td>{{ atencion.presupuesto }}</td>
+        <td>{{ atencion.honorarios }}</td>
       </tr>
     </tbody>
   </table>
@@ -114,10 +114,10 @@
       <textarea [(ngModel)]="nuevaAtencion.observaciones" name="observaciones"></textarea>
 
       <label>Presupuesto:</label>
-      <input type="number" [(ngModel)]="nuevaAtencion.presupuesto" name="presupuesto">
+      <textarea [(ngModel)]="nuevaAtencion.presupuesto" name="presupuesto"></textarea>
 
       <label>Honorarios:</label>
-      <input type="number" [(ngModel)]="nuevaAtencion.honorarios" name="honorarios">
+      <textarea [(ngModel)]="nuevaAtencion.honorarios" name="presupuesto"></textarea>
 
       <div class="modal-actions">
         <button type="submit">Agregar</button>

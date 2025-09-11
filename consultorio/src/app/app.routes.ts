@@ -33,5 +33,8 @@ export const routes: Routes = [
     path: 'odontogramas',
     loadComponent: () => import('./components/odontogramas-lista/odontogramas-lista.component').then(m => m.OdontogramasListaComponent)
   },
+  {
+    path: 'reportes', loadComponent: () => import('./components/reportes/reportes.component').then(m => m.ReportesComponent)
+  },
   { path: '**', redirectTo: '/login' }
 ];

@@ -20,8 +20,9 @@ export class OdontogramaComponent implements OnInit, OnChanges {
   loading = false;
   tipo: 'adulto' | 'nino' = 'adulto';
   mostrarModalAtencion = false;
-  nuevaAtencion: any = { fecha: '', observaciones: '', presupuesto: null, honorarios: null };
-
+  nuevaAtencion: any = { fecha: '', observaciones: '', presupuesto: '', honorarios: null };
+  numero1: number = 0;
+  numero2: number = 0;
 
   // Estructura base de piezas y partes para adultos (32 dientes)
   piezasBaseAdulto = [
@@ -102,7 +103,7 @@ export class OdontogramaComponent implements OnInit, OnChanges {
     this.nuevaAtencion = {
       fecha: new Date().toISOString().split('T')[0], // fecha por defecto hoy
       observaciones: '',
-      presupuesto: null,
+      presupuesto: '',
       honorarios: null,
       numero: (this.odontograma.atenciones?.length || 0) + 1
     };

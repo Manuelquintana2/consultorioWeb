@@ -13,6 +13,7 @@ const turnosRoutes = require('./routes/turnos');
 const horariosRoutes = require('./routes/horarios');
 const fichasKinesicasRoutes = require('./routes/fichas-kinesicas');
 const odontogramasRoutes = require('./routes/odontogramas');
+const reportesRoutes = require('./routes/reportes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -51,6 +52,7 @@ app.use('/api/turnos', turnosRoutes);
 app.use('/api/horarios', horariosRoutes);
 app.use('/api/fichas-kinesicas', fichasKinesicasRoutes);
 app.use('/api/odontogramas', odontogramasRoutes);
+app.use('/api/reportes', reportesRoutes);
 
 // Ruta de salud
 app.get('/api/health', (req, res) => {
