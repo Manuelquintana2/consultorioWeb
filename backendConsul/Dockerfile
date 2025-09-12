@@ -1,6 +1,10 @@
 # Usamos Node 18 Alpine
 FROM node:18-alpine
 
+RUN apk add --no-cache tzdata \
+    && cp /usr/share/zoneinfo/America/Argentina/Buenos_Aires /etc/localtime \
+    && echo "America/Argentina/Buenos_Aires" > /etc/timezone
+    
 # Carpeta de trabajo
 WORKDIR /app
 
