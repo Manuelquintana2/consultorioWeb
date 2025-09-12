@@ -4,11 +4,11 @@ const bcrypt = require('bcryptjs');
 class PostgresDatabase {
     constructor() {
         this.pool = new Pool({
-            host: 'localhost',
-            port: 5432,
-            database: 'consultorio_db',
-            user: 'postgres',
-            password: 'admin', // Cambia esto por tu contraseña real
+            host: process.env.DB_HOST,
+            port: process.env.DB_PORT,
+            database: process.env.DB_NAME,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
             max: 20,
             idleTimeoutMillis: 30000,
             connectionTimeoutMillis: 2000,
@@ -226,9 +226,7 @@ class PostgresDatabase {
                 `, [kinesiologaPassword, odontologoPassword]);
 
                 console.log('Datos iniciales insertados exitosamente');
-                console.log('Credenciales iniciales:');
-                console.log('Kinesióloga: kinesiologa@consultorio.com / kinesiologa123');
-                console.log('Odontólogo: odontologo@consultorio.com / odontologo123');
+
             }
         } catch (error) {
             console.error('Error al insertar datos iniciales:', error);

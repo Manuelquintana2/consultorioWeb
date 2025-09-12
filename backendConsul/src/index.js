@@ -2,7 +2,24 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-require('dotenv').config();
+const path = require('path');
+const fs = require('fs');
+
+// Determinar archivo .env según NODE_ENV
+let envFile;
+if (process.env.NODE_ENV === 'production') {
+    envFile = path.resolve(__dirname, '.env.production');
+    if (fs.existsSync(envFile)) {
+        require('dotenv').config({ path: process.env.BACKEND_ENV_FILE || '.env'});
+        console.log('Variables de entorno cargadas desde .env.production');
+    } else {
+        console.warn('.env.production no encontrado, usando variables del sistema');
+    }
+} else {
+    // Desarrollo local usa simplemente .env
+    require('dotenv').config();
+    console.log('Variables de entorno cargadas desde .env');
+}
 
 const database = require('./database/postgres');
 
@@ -26,7 +43,7 @@ app.use(morgan('combined'));
 
 // Middleware de CORS
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:4200',
+    origin: process.env.FRONTEND_URL || 'http://localhost:8080',
     credentials: true
 }));
 
@@ -108,9 +125,7 @@ async function startServer() {
         app.listen(PORT, () => {
             console.log(`Servidor corriendo en el puerto ${PORT}`);
             console.log(`API disponible en: http://localhost:${PORT}`);
-            console.log('Credenciales iniciales:');
-            console.log('Kinesióloga: kinesiologa@consultorio.com / kinesiologa123');
-            console.log('Odontólogo: odontologo@consultorio.com / odontologo123');
+
         });
     } catch (error) {
         console.error('Error al iniciar el servidor:', error);

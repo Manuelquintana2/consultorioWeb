@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:17
+    container_name: db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: consultorio_db
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backendconsul:
+    build: ./backendConsul
+    container_name: backendConsul
+    restart: always
+    env_file:
+      - ${BACKEND_ENV_FILE}  # variable que elegimos en dev/prod
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+
+  consultorio:
+    image: nginx:alpine
+    container_name: consultorio
+    restart: always
+    ports:
+      - "8080:80"
+
+    volumes:
+      - ./consultorio/dist/consultorio/browser:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backendconsul
+
+volumes:
+  db-data:
