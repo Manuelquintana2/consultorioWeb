@@ -1,11 +1,11 @@
 # Dependencias
-/node_modules
+node_modules/
 
 # Archivos de entorno
-/.env
+.env
 .env.*.local
-/.env.production
-/.env.development
+.env.production
+.env.development
 .env.test
 
 # Logs
