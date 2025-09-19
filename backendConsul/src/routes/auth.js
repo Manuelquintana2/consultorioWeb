@@ -2,12 +2,13 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const database = require('../database/postgres');
 const auth = require('../middleware/auth');
+const loginLimiter = require('../middleware/loginLimiter'); 
 const { v4: uuidv4 } = require('uuid');
 
 const router = express.Router();
 
 // Login de especialistas
-router.post('/login', [
+router.post('/login',loginLimiter, [
     body('email').isEmail().withMessage('Email inválido'),
     body('password').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres')
 ], async (req, res) => {

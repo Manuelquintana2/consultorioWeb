@@ -4,11 +4,12 @@ import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
+import { NgxCaptchaModule } from 'ngx-captcha';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule,CommonModule],
+  imports: [ReactiveFormsModule, FormsModule,CommonModule,NgxCaptchaModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
@@ -23,7 +24,8 @@ export class LoginComponent implements OnInit {
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required]]
+      password: ['', [Validators.required]],
+      recaptcha: [null, Validators.required],
     });
   }
 

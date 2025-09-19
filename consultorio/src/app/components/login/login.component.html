@@ -34,6 +34,11 @@
           <span *ngIf="loginForm.get('password')?.errors?.['required']">La contraseña es obligatoria</span>
         </div>
       </div>
+      <div class="d-flex justify-content-center my-3">
+          <ngx-recaptcha2 [siteKey]="'6LcN9c4rAAAAAMs95bdPxiwWSP6gsv16hkaUvVQt'"
+          [useGlobalDomain]="false" formControlName = "recaptcha"></ngx-recaptcha2>
+
+        </div> 
 
       <button
         type="submit"
