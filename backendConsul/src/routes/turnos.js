@@ -277,7 +277,7 @@ router.put('/:uid', [
 
             // Verificar que el especialista tiene horarios para ese día
             const fechaObj = new Date(nuevaFecha);
-            const diaSemana = fechaObj.getDay();
+            const diaSemana = fechaObj.getUTCDay(); // usar UTC
             const diasSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
             const diaColumna = diasSemana[diaSemana];
 

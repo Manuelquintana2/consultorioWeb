@@ -5,6 +5,8 @@
         <div class="logo">
           <h1>🏥 Consultorio Médico</h1>
           <p class="subtitle">Sistema de Gestión Integral</p>
+          <p class="user-info" *ngIf="authService.isAuthenticated()">
+            Usuario: {{ authService.getCurrentUser()?.email }}({{ authService.getCurrentUser()?.especialidad }})
         </div>
         <nav class="nav-menu">
           <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
