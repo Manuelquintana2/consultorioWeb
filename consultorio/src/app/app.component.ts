@@ -21,4 +21,17 @@ export class AppComponent implements OnInit {
     this.especialista = this.authService.getCurrentUser() as Especialista;
   }
 
+  getBackgroundClass(): string {
+    if (this.authService.isAuthenticated()) {
+      const especialidad = this.authService.getCurrentUser()?.especialidad;
+      if (especialidad === 'Kinesiologia') {
+        return 'bg-kinesiologia';
+      } else if (especialidad === 'Odontologia') {
+        return 'bg-odontologia';
+      }
+    }
+    // si no está autenticado o no tiene especialidad → kinesiología
+    return 'bg-kinesiologia';
+  }
+
 }

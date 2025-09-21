@@ -3,9 +3,17 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* Fondo Kinesiología (y default si no está logueado) */
+.bg-kinesiologia {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
+/* Fondo Odontología */
+.bg-odontologia {
+  background: linear-gradient(135deg, #fe41c8 0%, #f01515 100%);
+}
 /* Header */
 .app-header {
   background: rgba(255, 255, 255, 0.95);
