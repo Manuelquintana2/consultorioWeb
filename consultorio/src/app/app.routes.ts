@@ -1,9 +1,14 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
+import { NoAuthGuard } from './guards/no-auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
-  { path: 'login', loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent) },
+  { 
+    path: 'login', 
+    loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent),
+    canActivate: [NoAuthGuard]
+  },
   { 
     path: 'dashboard', 
     loadComponent: () => import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent),
@@ -12,6 +17,11 @@ export const routes: Routes = [
   { 
     path: 'pacientes', 
     loadComponent: () => import('./components/pacientes/pacientes.component').then(m => m.PacientesComponent),
+    canActivate: [AuthGuard]
+  },
+  { 
+    path: 'pacientes/:uid/pdf', 
+    loadComponent: () => import('./components/pacientes-pdf/pacientes-pdf.component').then(m => m.PacientesPdfComponent),
     canActivate: [AuthGuard]
   },
   { 

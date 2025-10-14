@@ -35,4 +35,8 @@ export class TurnosService {
   completarTurno(uid: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/${uid}/completar`, {});
   }
+
+  verificarTurnoExistente(especialista_uid: string, fecha: string, hora: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/verificar?especialista_uid=${especialista_uid}&fecha=${fecha}&hora=${hora}`);
+  }
 } 

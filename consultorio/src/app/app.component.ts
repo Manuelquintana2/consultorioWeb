@@ -13,12 +13,21 @@ import { CommonModule } from '@angular/common';
 export class AppComponent implements OnInit {
   title = 'consultorio';
   especialista : any = null;
+  menuAbierto: boolean = false;
 
   constructor(public authService: AuthService) { 
 
   }
   ngOnInit(): void {
     this.especialista = this.authService.getCurrentUser() as Especialista;
+  }
+
+  toggleMenu(): void {
+    this.menuAbierto = !this.menuAbierto;
+  }
+
+  cerrarMenu(): void {
+    this.menuAbierto = false;
   }
 
   getBackgroundClass(): string {

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { PacientesService } from '../../services/pacientes.service';
 import { Paciente } from '../../models';
 import { FiltroPacientesPipe } from '../../pipes';
@@ -25,7 +26,8 @@ export class PacientesComponent implements OnInit {
 
   constructor(
     private pacientesService: PacientesService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private router: Router
   ) {
     this.pacienteForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)]],
@@ -184,6 +186,10 @@ export class PacientesComponent implements OnInit {
     this.editando = false;
     this.mostrandoFormulario = false;
     this.pacienteEditando = null;
+  }
+
+  verPdfs(uid: string): void {
+    this.router.navigate(['/pacientes', uid, 'pdf']);
   }
 
   showSuccess(message: string): void {
