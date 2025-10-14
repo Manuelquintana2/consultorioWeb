@@ -1,0 +1,127 @@
+<div class="pdf-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <button class="btn-volver" (click)="volver()">
+        <span class="icon">←</span>
+        Volver
+      </button>
+      <h1>📄 Gestión de PDFs</h1>
+    </div>
+  </div>
+
+  <!-- Información del paciente -->
+  <div class="paciente-info" *ngIf="paciente">
+    <div class="info-card">
+      <div class="info-item">
+        <span class="label">Paciente:</span>
+        <span class="value">{{ paciente.nombre }}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">Obra Social:</span>
+        <span class="value">{{ paciente.obraSocial }}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">Sección:</span>
+        <span class="value badge" [class.badge-kinesio]="paciente.seccion === 'Kinesiologia'"
+              [class.badge-odonto]="paciente.seccion === 'Odontologia'"
+              [class.badge-ambas]="paciente.seccion === 'Ambas'">
+          {{ paciente.seccion }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensajes -->
+  <div class="mensaje" *ngIf="mensaje" [class.success]="tipoMensaje === 'success'" [class.error]="tipoMensaje === 'error'">
+    <span>{{ mensaje }}</span>
+    <button class="cerrar-mensaje" (click)="cerrarMensaje()">×</button>
+  </div>
+
+  <!-- Subir PDF -->
+  <div class="upload-section">
+    <div class="upload-card">
+      <h3>📤 Subir nuevo PDF</h3>
+      <div class="upload-area">
+        <input type="file" id="fileInput" accept=".pdf" (change)="onFileSelected($event)" [disabled]="subiendo">
+        <label for="fileInput" class="upload-label" [class.disabled]="subiendo">
+          <span class="upload-icon">📄</span>
+          <span *ngIf="!subiendo">Seleccionar archivo PDF</span>
+          <span *ngIf="subiendo">Subiendo...</span>
+        </label>
+      </div>
+      
+      <!-- Barra de progreso -->
+      <div class="progress-bar" *ngIf="subiendo">
+        <div class="progress-fill" [style.width.%]="progresoSubida"></div>
+        <span class="progress-text">{{ progresoSubida }}%</span>
+      </div>
+
+      <p class="upload-hint">Solo archivos PDF. Tamaño máximo: 50MB</p>
+    </div>
+  </div>
+
+  <!-- Lista de PDFs -->
+  <div class="pdfs-section">
+    <h2>📚 PDFs del Paciente ({{ pdfs.length }})</h2>
+
+    <!-- Loading -->
+    <div class="loading" *ngIf="loading">
+      <div class="spinner"></div>
+      <p>Cargando PDFs...</p>
+    </div>
+
+    <!-- Sin PDFs -->
+    <div class="empty-state" *ngIf="!loading && pdfs.length === 0">
+      <span class="empty-icon">📄</span>
+      <p>No hay PDFs registrados para este paciente</p>
+      <p class="empty-hint">Sube el primer PDF usando el formulario de arriba</p>
+    </div>
+
+    <!-- Lista de PDFs -->
+    <div class="pdfs-grid" *ngIf="!loading && pdfs.length > 0">
+      <div class="pdf-card" *ngFor="let pdf of pdfs">
+        <div class="pdf-icon">📄</div>
+        <div class="pdf-info">
+          <h4 class="pdf-nombre">{{ formatearNombreArchivo(pdf.path) }}</h4>
+          <p class="pdf-fecha">📅 {{ formatearFecha(pdf.fecha_creacion) }}</p>
+        </div>
+        <div class="pdf-actions">
+          <button class="btn-action btn-ver" (click)="verPdf(pdf)" title="Ver PDF">
+            <span class="icon">👁️</span>
+            Ver
+          </button>
+          <button class="btn-action btn-descargar" (click)="descargarPdf(pdf)" title="Descargar PDF">
+            <span class="icon">⬇️</span>
+            Descargar
+          </button>
+          <button class="btn-action btn-eliminar" (click)="confirmarEliminar(pdf)" title="Eliminar PDF">
+            <span class="icon">🗑️</span>
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div class="modal-overlay" *ngIf="mostrarModalEliminar" (click)="cancelarEliminar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>⚠️ Confirmar eliminación</h3>
+      <button class="modal-close" (click)="cancelarEliminar()">×</button>
+    </div>
+    <div class="modal-body">
+      <p>¿Estás seguro de que deseas eliminar este PDF?</p>
+      <p class="pdf-nombre-modal" *ngIf="pdfAEliminar">
+        <strong>{{ formatearNombreArchivo(pdfAEliminar.path) }}</strong>
+      </p>
+      <p class="modal-warning">⚠️ Esta acción no se puede deshacer</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancelar" (click)="cancelarEliminar()">Cancelar</button>
+      <button class="btn btn-confirmar" (click)="eliminarPdf()">Eliminar</button>
+    </div>
+  </div>
+</div>

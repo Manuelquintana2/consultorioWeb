@@ -8,20 +8,29 @@
           <p class="user-info" *ngIf="authService.isAuthenticated()">
             Usuario: {{ authService.getCurrentUser()?.email }}({{ authService.getCurrentUser()?.especialidad }})
         </div>
-        <nav class="nav-menu">
-          <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
+        
+        <!-- Botón hamburguesa para móvil -->
+        <button class="hamburger-btn" (click)="toggleMenu()" aria-label="Toggle menu">
+          <span class="hamburger-line" [class.active]="menuAbierto"></span>
+          <span class="hamburger-line" [class.active]="menuAbierto"></span>
+          <span class="hamburger-line" [class.active]="menuAbierto"></span>
+        </button>
+
+        <!-- Menú de navegación -->
+        <nav class="nav-menu" [class.menu-abierto]="menuAbierto">
+          <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link" (click)="cerrarMenu()">
             <span class="nav-icon">🏠</span>
             Dashboard
           </a>
-          <a routerLink="/pacientes" routerLinkActive="active" class="nav-link">
+          <a routerLink="/pacientes" routerLinkActive="active" class="nav-link" (click)="cerrarMenu()">
             <span class="nav-icon">👥</span>
             Pacientes
           </a>
-          <a routerLink="/turnos" routerLinkActive="active" class="nav-link">
+          <a routerLink="/turnos" routerLinkActive="active" class="nav-link" (click)="cerrarMenu()">
             <span class="nav-icon">📅</span>
             Turnos
           </a>
-          <a routerLink="/horarios" routerLinkActive="active" class="nav-link">
+          <a routerLink="/horarios" routerLinkActive="active" class="nav-link" (click)="cerrarMenu()">
             <span class="nav-icon">⏰</span>
             Horarios
           </a>
