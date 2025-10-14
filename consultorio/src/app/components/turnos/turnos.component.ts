@@ -181,25 +181,76 @@ export class TurnosComponent implements OnInit {
           }
         });
       } else {
-        this.turnosService.crearTurno(turnoData).subscribe({
-          next: (response) => {
-            if (response.success) {
-              this.showSuccess('Turno creado exitosamente');
-              this.cargarTurnos();
-              this.resetForm();
-            } else {
-              this.showError(response.message || 'Error al crear turno');
-            }
-          },
-          error: (error) => {
-            this.showError(error.error?.message || 'Error al crear turno');
-          },
-          complete: () => {
-            this.loading = false;
-          }
-        });
+        // Verificar si ya existe un turno en ese horario
+        this.verificarYCrearTurno(turnoData);
       }
     }
+  }
+
+  verificarYCrearTurno(turnoData: any): void {
+    this.turnosService.verificarTurnoExistente(
+      turnoData.especialista_uid, 
+      turnoData.fecha, 
+      turnoData.hora
+    ).subscribe({
+      next: (response) => {
+        if (response.success) {
+          const turnosExistentes = response.data.turnosExistentes;
+          const capacidad = response.data.capacidad;
+          
+          // Si ya hay turnos y la capacidad es 2, mostrar mensaje de sobre turno
+          if (turnosExistentes > 0 && capacidad === 2) {
+            Swal.fire({
+              title: '⚠️ Sobre Turno',
+              html: `Ya existe ${turnosExistentes} turno${turnosExistentes > 1 ? 's' : ''} en este horario.<br><br>
+                     <strong>¿Estás a punto de guardar un sobre turno, estás de acuerdo?</strong>`,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#f59e0b',
+              cancelButtonColor: '#3085d6',
+              confirmButtonText: 'Sí, crear sobre turno',
+              cancelButtonText: 'Cancelar'
+            }).then((result) => {
+              if (result.isConfirmed) {
+                this.crearTurno(turnoData);
+              } else {
+                this.loading = false;
+              }
+            });
+          } else {
+            // Crear turno normalmente
+            this.crearTurno(turnoData);
+          }
+        } else {
+          this.showError(response.message || 'Error al verificar turno');
+          this.loading = false;
+        }
+      },
+      error: (error) => {
+        this.showError(error.error?.message || 'Error al verificar turno');
+        this.loading = false;
+      }
+    });
+  }
+
+  crearTurno(turnoData: any): void {
+    this.turnosService.crearTurno(turnoData).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.showSuccess('Turno creado exitosamente');
+          this.cargarTurnos();
+          this.resetForm();
+        } else {
+          this.showError(response.message || 'Error al crear turno');
+        }
+      },
+      error: (error) => {
+        this.showError(error.error?.message || 'Error al crear turno');
+      },
+      complete: () => {
+        this.loading = false;
+      }
+    });
   }
 
   editarTurno(turno: any): void {

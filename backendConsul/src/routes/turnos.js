@@ -33,6 +33,51 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Verificar turnos existentes en un horario específico
+router.get('/verificar', async (req, res) => {
+    try {
+        const { especialista_uid, fecha, hora } = req.query;
+        
+        if (!especialista_uid || !fecha || !hora) {
+            return res.status(400).json({
+                success: false,
+                message: 'Faltan parámetros requeridos'
+            });
+        }
+
+        // Contar turnos activos en ese horario
+        const turnosExistentes = await database.get(`
+            SELECT COUNT(*) as count
+            FROM turnos
+            WHERE especialista_uid = $1 
+            AND fecha = $2 
+            AND hora = $3 
+            AND estado = 'activo'
+        `, [especialista_uid, fecha, hora]);
+
+        // Obtener capacidad del especialista
+        const especialista = await database.get(`
+            SELECT capacidad_turnos
+            FROM especialistas
+            WHERE uid = $1
+        `, [especialista_uid]);
+
+        res.json({
+            success: true,
+            data: {
+                turnosExistentes: parseInt(turnosExistentes.count),
+                capacidad: especialista?.capacidad_turnos || 1
+            }
+        });
+    } catch (error) {
+        console.error('Error al verificar turnos:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor'
+        });
+    }
+});
+
 // Obtener turnos por fecha
 router.get('/fecha/:fecha', async (req, res) => {
     try {
