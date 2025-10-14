@@ -188,6 +188,7 @@
             <p><strong>Fecha Nac.:</strong> {{ paciente.fechanacimiento | date:'dd/MM/yyyy' }}</p>
           </div>
           <div class="paciente-actions">
+            <button class="btn-pdf" (click)="verPdfs(paciente.uid)">📄 PDFs</button>
             <button class="btn-edit" (click)="editarPaciente(paciente)">Editar</button>
             <button class="btn-delete" (click)="eliminarPaciente(paciente.uid)">Eliminar</button>
           </div>

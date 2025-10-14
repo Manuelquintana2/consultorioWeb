@@ -7,7 +7,7 @@ export interface PdfPaciente {
   id: number;
   uid_paciente: string;
   path: string;
-  fecha_creacion: string;
+  fecha_subida: string;
 }
 
 export interface PdfInfo extends PdfPaciente {
@@ -22,7 +22,7 @@ export interface PdfInfo extends PdfPaciente {
   providedIn: 'root'
 })
 export class PacientesPdfService {
-  private apiUrl = `${environment.apiUrl}/pacientes`;
+  private apiUrl = `${environment.apiUrl}/pdf-pacientes`;
 
   constructor(private http: HttpClient) {}
 
@@ -30,7 +30,14 @@ export class PacientesPdfService {
    * Obtener todos los PDFs de un paciente
    */
   obtenerPdfs(uidPaciente: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/${uidPaciente}/pdf`);
+    return this.http.get(`${this.apiUrl}/paciente/${uidPaciente}`);
+  }
+
+  /**
+   * Obtener un PDF por ID
+   */
+  obtenerPdfPorId(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${id}`);
   }
 
   /**
@@ -39,8 +46,9 @@ export class PacientesPdfService {
   subirPdf(uidPaciente: string, archivo: File): Observable<any> {
     const formData = new FormData();
     formData.append('pdf', archivo);
+    formData.append('uidPaciente', uidPaciente);
 
-    return this.http.post(`${this.apiUrl}/${uidPaciente}/pdf`, formData, {
+    return this.http.post(`${this.apiUrl}`, formData, {
       reportProgress: true,
       observe: 'events'
     });
@@ -49,8 +57,10 @@ export class PacientesPdfService {
   /**
    * Descargar un PDF
    */
-  descargarPdf(uidPaciente: string, pdfId: number): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/${uidPaciente}/pdf/${pdfId}`, {
+  descargarPdf(path: string): Observable<Blob> {
+    // Construir URL sin /api porque los uploads están en la raíz del servidor
+    const baseUrl = environment.apiUrl.replace('/api', '');
+    return this.http.get(`${baseUrl}/${path}`, {
       responseType: 'blob'
     });
   }
@@ -58,30 +68,25 @@ export class PacientesPdfService {
   /**
    * Ver un PDF en nueva pestaña
    */
-  verPdf(uidPaciente: string, pdfId: number): void {
-    const url = `${this.apiUrl}/${uidPaciente}/pdf/${pdfId}`;
+  verPdf(path: string): void {
+    // Construir URL sin /api porque los uploads están en la raíz del servidor
+    const baseUrl = environment.apiUrl.replace('/api', '');
+    const url = `${baseUrl}/${path}`;
     window.open(url, '_blank');
-  }
-
-  /**
-   * Obtener información de un PDF
-   */
-  obtenerInfoPdf(uidPaciente: string, pdfId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/${uidPaciente}/pdf/${pdfId}/info`);
   }
 
   /**
    * Eliminar un PDF
    */
-  eliminarPdf(uidPaciente: string, pdfId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${uidPaciente}/pdf/${pdfId}`);
+  eliminarPdf(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
   /**
    * Descargar PDF con nombre personalizado
    */
-  descargarPdfConNombre(uidPaciente: string, pdfId: number, nombreArchivo: string): void {
-    this.descargarPdf(uidPaciente, pdfId).subscribe(
+  descargarPdfConNombre(path: string, nombreArchivo: string): void {
+    this.descargarPdf(path).subscribe(
       (blob: Blob) => {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -96,6 +101,31 @@ export class PacientesPdfService {
         console.error('Error al descargar PDF:', error);
       }
     );
+  }
+
+  /**
+   * Formatear fecha
+   */
+  formatearFecha(fecha: string): string {
+    const date = new Date(fecha);
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  /**
+   * Extraer nombre del archivo del path
+   */
+  extraerNombreArchivo(path: string): string {
+    const partes = path.split('-');
+    if (partes.length > 2) {
+      return partes.slice(2).join('-');
+    }
+    return path.split('/').pop() || 'archivo.pdf';
   }
 }
 

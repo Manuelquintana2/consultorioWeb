@@ -126,12 +126,12 @@ export class PacientesPdfComponent implements OnInit {
   }
 
   verPdf(pdf: PdfPaciente): void {
-    this.pdfService.verPdf(this.uidPaciente, pdf.id);
+    this.pdfService.verPdf(pdf.path);
   }
 
   descargarPdf(pdf: PdfPaciente): void {
-    const nombreArchivo = pdf.path;
-    this.pdfService.descargarPdfConNombre(this.uidPaciente, pdf.id, nombreArchivo);
+    const nombreArchivo = this.pdfService.extraerNombreArchivo(pdf.path);
+    this.pdfService.descargarPdfConNombre(pdf.path, nombreArchivo);
   }
 
   confirmarEliminar(pdf: PdfPaciente): void {
@@ -147,7 +147,7 @@ export class PacientesPdfComponent implements OnInit {
   eliminarPdf(): void {
     if (!this.pdfAEliminar) return;
 
-    this.pdfService.eliminarPdf(this.uidPaciente, this.pdfAEliminar.id).subscribe({
+    this.pdfService.eliminarPdf(this.pdfAEliminar.id).subscribe({
       next: (response) => {
         if (response.success) {
           this.mostrarMensaje('PDF eliminado exitosamente', 'success');
@@ -169,16 +169,11 @@ export class PacientesPdfComponent implements OnInit {
   }
 
   formatearFecha(fecha: string): string {
-    return fecha;
+    return this.pdfService.formatearFecha(fecha);
   }
 
   formatearNombreArchivo(path: string): string {
-    // Extraer solo el nombre del archivo sin el timestamp
-    const partes = path.split('-');
-    if (partes.length > 2) {
-      return partes.slice(2).join('-');
-    }
-    return path;
+    return this.pdfService.extraerNombreArchivo(path);
   }
 
   mostrarMensaje(mensaje: string, tipo: 'success' | 'error'): void {

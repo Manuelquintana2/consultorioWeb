@@ -19,7 +19,7 @@
       </div>
       <div class="info-item">
         <span class="label">Obra Social:</span>
-        <span class="value">{{ paciente.obraSocial }}</span>
+        <span class="value">{{ paciente.obrasocial }}</span>
       </div>
       <div class="info-item">
         <span class="label">Sección:</span>
@@ -84,7 +84,7 @@
         <div class="pdf-icon">📄</div>
         <div class="pdf-info">
           <h4 class="pdf-nombre">{{ formatearNombreArchivo(pdf.path) }}</h4>
-          <p class="pdf-fecha">📅 {{ formatearFecha(pdf.fecha_creacion) }}</p>
+          <p class="pdf-fecha">📅 {{ formatearFecha(pdf.fecha_subida) }}</p>
         </div>
         <div class="pdf-actions">
           <button class="btn-action btn-ver" (click)="verPdf(pdf)" title="Ver PDF">

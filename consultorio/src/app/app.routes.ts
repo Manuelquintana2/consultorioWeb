@@ -20,6 +20,11 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   { 
+    path: 'pacientes/:uid/pdf', 
+    loadComponent: () => import('./components/pacientes-pdf/pacientes-pdf.component').then(m => m.PacientesPdfComponent),
+    canActivate: [AuthGuard]
+  },
+  { 
     path: 'turnos', 
     loadComponent: () => import('./components/turnos/turnos.component').then(m => m.TurnosComponent),
     canActivate: [AuthGuard]
