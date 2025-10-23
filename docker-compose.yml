@@ -25,8 +25,6 @@ services:
       - db
     ports:
       - "3000:3000"
-    volumes:
-      - uploads-data:/app/src/uploads
 
   consultorio:
     image: nginx:alpine
@@ -46,4 +44,3 @@ services:
 
 volumes:
   db-data:
-  uploads-data:
