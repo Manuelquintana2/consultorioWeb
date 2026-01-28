@@ -18,20 +18,17 @@ class PostgresDatabase {
 
     async init() {
         try {
-            // Probar conexión
             const client = await this.pool.connect();
-            console.log('Conectado a PostgreSQL en LocalHost');
+            console.log('Conectado a PostgreSQL');
             client.release();
-
-            // Crear tablas
-            await this.createTables();
             
-            // Insertar datos iniciales
-            await this.insertInitialData();
+            // COMENTA ESTAS LÍNEAS:
+            // await this.createTables();
+            // await this.insertInitialData();
             
-            console.log('Base de datos PostgreSQL inicializada correctamente');
+            console.log('Base de datos lista con los datos del backup');
         } catch (error) {
-            console.error('Error al inicializar PostgreSQL:', error);
+            console.error('Error al conectar:', error);
             throw error;
         }
     }
