@@ -12,7 +12,7 @@ export class ReportesService {
   constructor(private http: HttpClient) { }
 
   // Crear reporte
-  subirReporte(data: FormData) {
+  subirReporte(data: any) {
     return this.http.post(`${this.apiUrl}/`, data);
   }
 
@@ -29,5 +29,25 @@ export class ReportesService {
   // Eliminar reporte por id
   eliminarReporte(id: number) {
     return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+
+  // =========================
+  // Estadísticas
+  // =========================
+
+  obtenerLogsIngresos(params?: { from?: string; to?: string; limit?: number }) {
+    return this.http.get(`${this.apiUrl}/stats/logins`, { params: params as any });
+  }
+
+  obtenerTurnosPorEspecialista(params?: { from?: string; to?: string }) {
+    return this.http.get(`${this.apiUrl}/stats/turnos-por-especialista`, { params: params as any });
+  }
+
+  obtenerTurnosPorDia(params?: { from?: string; to?: string }) {
+    return this.http.get(`${this.apiUrl}/stats/turnos-por-dia`, { params: params as any });
+  }
+
+  obtenerCompletadosPorMedico(params?: { from?: string; to?: string }) {
+    return this.http.get(`${this.apiUrl}/stats/completados-por-medico`, { params: params as any });
   }
 }

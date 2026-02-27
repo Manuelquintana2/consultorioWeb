@@ -52,6 +52,22 @@ router.post('/login',loginLimiter, [
             [especialista.uid]
         );
 
+        // Log de ingreso
+        try {
+            await database.query(
+                `INSERT INTO login_logs (usuario_uid, email, ip, user_agent)
+                 VALUES ($1, $2, $3, $4)`,
+                [
+                    especialista.uid,
+                    especialista.email,
+                    req.ip || null,
+                    req.get('user-agent') || null
+                ]
+            );
+        } catch (e) {
+            console.error('No se pudo registrar login_log:', e.message);
+        }
+
         // Generar token
         const token = auth.generateToken(especialista.uid, especialista.especialidad);
 
