@@ -1,4 +1,4 @@
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:3000/api'
-}; 
+  production: true, // Cámbialo a true si es para el despliegue final
+  apiUrl: 'https://consultorioaguero64.duckdns.org/api'
+};
