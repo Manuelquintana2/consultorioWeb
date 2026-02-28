@@ -1,29 +1,148 @@
 <div class="reportes-container">
-  <h2>Gestión de Reportes</h2>
+  <div class="header">
+    <h2>Reportes y Estadísticas</h2>
 
-  <!-- Formulario -->
-  <form [formGroup]="reporteForm" (ngSubmit)="agregarReporte()">
-    <textarea formControlName="reporte" placeholder="Escribe un reporte..."></textarea>
-
-    <div class="form-buttons">
-      <button type="submit" class="btn btn-primary" [disabled]="reporteForm.invalid">
-        {{ editMode ? 'Actualizar' : 'Agregar' }} Reporte
+    <div class="tabs">
+      <button class="btn" [ngClass]="vista === 'estadisticas' ? 'btn-primary' : 'btn-secondary'" (click)="cambiarVista('estadisticas')">
+        Estadísticas
       </button>
-      <button type="button" class="btn btn-primary" *ngIf="editMode" (click)="cancelarEdicion()">Cancelar</button>
+      <button class="btn" [ngClass]="vista === 'reportes' ? 'btn-primary' : 'btn-secondary'" (click)="cambiarVista('reportes')">
+        Reportes
+      </button>
     </div>
-  </form>
+  </div>
 
-  <hr />
-
-  <!-- Listado -->
-  <h3>Listado de Reportes</h3>
-  <ul>
-    <li *ngFor="let r of reportes">
-      <p>{{ r.reporte }}</p>
-      <div class="actions">
-        <button class="btn btn-primary" (click)="editarReporte(r)">Editar</button>
-        <button class="btn btn-primary" (click)="eliminarReporte(r.id)">Eliminar</button>
+  <!-- ========================= -->
+  <!-- Estadísticas -->
+  <!-- ========================= -->
+  <div *ngIf="vista === 'estadisticas'" class="estadisticas">
+    <form [formGroup]="filtrosForm" class="filtros" (ngSubmit)="cargarEstadisticas()">
+      <div class="filtro-item">
+        <label>Desde</label>
+        <input type="date" formControlName="from" />
       </div>
-    </li>
-  </ul>
+      <div class="filtro-item">
+        <label>Hasta</label>
+        <input type="date" formControlName="to" />
+      </div>
+      <div class="filtro-actions">
+        <button type="submit" class="btn btn-primary">Actualizar</button>
+      </div>
+    </form>
+
+    <div class="grid">
+      <section class="card">
+        <h3>Turnos por especialista (barra)</h3>
+        <div class="chart-wrap">
+          <canvas #turnosEspecialistaBar></canvas>
+        </div>
+        <div class="table-wrap" *ngIf="turnosPorEspecialista.length">
+          <table>
+            <thead>
+              <tr>
+                <th>Especialista</th>
+                <th>Especialidad</th>
+                <th>Cantidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let x of turnosPorEspecialista">
+                <td>{{ x.especialista_email }}</td>
+                <td>{{ x.especialidad }}</td>
+                <td>{{ x.cantidad }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>Turnos por día (total)</h3>
+        <div class="chart-wrap">
+          <canvas #turnosDiaBar></canvas>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>Turnos completados por médico (torta)</h3>
+        <div class="chart-wrap pie">
+          <canvas #completadosPie></canvas>
+        </div>
+        <div class="table-wrap" *ngIf="completadosPorMedico.length">
+          <table>
+            <thead>
+              <tr>
+                <th>Especialista</th>
+                <th>Especialidad</th>
+                <th>Completados</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let x of completadosPorMedico">
+                <td>{{ x.especialista_email }}</td>
+                <td>{{ x.especialidad }}</td>
+                <td>{{ x.cantidad_completados }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>Logs de ingresos</h3>
+        <div class="table-wrap" *ngIf="logsIngresos.length; else noLogs">
+          <table>
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Día</th>
+                <th>Hora</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let l of logsIngresos">
+                <td>{{ l.usuario }}</td>
+                <td>{{ l.dia }}</td>
+                <td>{{ l.hora }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noLogs>
+          <p class="muted">Todavía no hay ingresos registrados en el rango seleccionado.</p>
+        </ng-template>
+      </section>
+    </div>
+  </div>
+
+  <!-- ========================= -->
+  <!-- Reportes -->
+  <!-- ========================= -->
+  <div *ngIf="vista === 'reportes'" class="reportes">
+    <h3>Gestión de Reportes</h3>
+
+    <form [formGroup]="reporteForm" (ngSubmit)="agregarReporte()">
+      <textarea formControlName="reporte" placeholder="Escribe un reporte..."></textarea>
+
+      <div class="form-buttons">
+        <button type="submit" class="btn btn-primary" [disabled]="reporteForm.invalid">
+          {{ editMode ? 'Actualizar' : 'Agregar' }} Reporte
+        </button>
+        <button type="button" class="btn btn-secondary" *ngIf="editMode" (click)="cancelarEdicion()">Cancelar</button>
+      </div>
+    </form>
+
+    <hr />
+
+    <h3>Listado de Reportes</h3>
+    <ul>
+      <li *ngFor="let r of reportes">
+        <p>{{ r.reporte }}</p>
+        <div class="actions">
+          <button class="btn btn-primary" (click)="editarReporte(r)">Editar</button>
+          <button class="btn btn-danger" (click)="eliminarReporte(r.id)">Eliminar</button>
+        </div>
+      </li>
+    </ul>
+  </div>
 </div>
