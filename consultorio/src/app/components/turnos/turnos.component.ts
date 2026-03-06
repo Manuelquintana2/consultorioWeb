@@ -20,7 +20,7 @@ import { FiltroEstadoPipe } from '../../pipes/filtro-estado.pipe';
 export class TurnosComponent implements OnInit {
   turnos: any[] = [];
   pacientes: any[] = [];
-  horariosDisponibles: string[] = [];
+  horariosDisponibles: Array<{ hora: string; sobreTurno: boolean }> = [];
   turnoForm: FormGroup;
   editando = false;
   mostrandoFormulario = false;
@@ -116,7 +116,10 @@ export class TurnosComponent implements OnInit {
   }
 
   onFechaChange(): void {
-    if (this.turnoForm.get('fecha')?.value && this.turnoForm.get('especialista_uid')?.value) {
+    const especialista = this.turnoForm.get('especialista_uid')?.value || this.getEspecialistaUidActual();
+    const fecha = this.turnoForm.get('fecha')?.value;
+    if (fecha && especialista) {
+      this.turnoForm.patchValue({ especialista_uid: especialista });
       this.cargarHorariosDisponibles();
     }
   }
@@ -136,14 +139,22 @@ export class TurnosComponent implements OnInit {
 
   cargarHorariosDisponibles(): void {
     const fecha = this.turnoForm.get('fecha')?.value;
-    const especialista = this.turnoForm.get('especialista_uid')?.value;
+    const especialista = this.turnoForm.get('especialista_uid')?.value || this.getEspecialistaUidActual();
     console.log('fecha', fecha);
     console.log('especialista', especialista);
     if (fecha && especialista) {
       this.horariosService.getHorariosDisponibles(fecha).subscribe({
         next: (response) => {
           if (response.success) {
-            this.horariosDisponibles = response.data;
+            const data = response.data;
+            // Compatibilidad: si viene array de strings, convertir a formato con sobreTurno
+            this.horariosDisponibles = Array.isArray(data)
+              ? data.map((item: any) =>
+                  typeof item === 'string'
+                    ? { hora: item, sobreTurno: false }
+                    : { hora: item.hora, sobreTurno: item.sobreTurno ?? false }
+                )
+              : [];
           } else {
             this.showError('Error al cargar horarios: ' + response.message);
           }
@@ -319,8 +330,26 @@ export class TurnosComponent implements OnInit {
     });
   }
 
+  /** Obtiene el UID del especialista actual según el usuario autenticado */
+  getEspecialistaUidActual(): string {
+    const user = this.authService.getCurrentUser();
+    if (user?.uid) return user.uid;
+    if (this.authService.isKinesiologo()) return 'esp_kinesiologa';
+    if (this.authService.isOdontologo()) return 'esp_odontologo';
+    return '';
+  }
+
+  /** Indica si solo hay un tipo de especialista (no hay selector real) */
+  get tieneUnSoloEspecialista(): boolean {
+    return this.authService.isKinesiologo() !== this.authService.isOdontologo();
+  }
+
   resetForm(): void {
     this.turnoForm.reset();
+    const especialistaUid = this.getEspecialistaUidActual();
+    if (especialistaUid) {
+      this.turnoForm.patchValue({ especialista_uid: especialistaUid });
+    }
     this.editando = false;
     this.mostrandoFormulario = true;
     this.turnoEditando = null;
