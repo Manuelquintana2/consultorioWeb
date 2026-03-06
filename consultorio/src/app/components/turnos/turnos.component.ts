@@ -20,7 +20,7 @@ import { FiltroEstadoPipe } from '../../pipes/filtro-estado.pipe';
 export class TurnosComponent implements OnInit {
   turnos: any[] = [];
   pacientes: any[] = [];
-  horariosDisponibles: string[] = [];
+  horariosDisponibles: Array<{ hora: string; sobreTurno: boolean }> = [];
   turnoForm: FormGroup;
   editando = false;
   mostrandoFormulario = false;
@@ -146,7 +146,15 @@ export class TurnosComponent implements OnInit {
       this.horariosService.getHorariosDisponibles(fecha).subscribe({
         next: (response) => {
           if (response.success) {
-            this.horariosDisponibles = response.data;
+            const data = response.data;
+            // Compatibilidad: si viene array de strings, convertir a formato con sobreTurno
+            this.horariosDisponibles = Array.isArray(data)
+              ? data.map((item: any) =>
+                  typeof item === 'string'
+                    ? { hora: item, sobreTurno: false }
+                    : { hora: item.hora, sobreTurno: item.sobreTurno ?? false }
+                )
+              : [];
           } else {
             this.showError('Error al cargar horarios: ' + response.message);
           }

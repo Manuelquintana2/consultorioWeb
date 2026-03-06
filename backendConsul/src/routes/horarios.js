@@ -232,26 +232,46 @@ router.get('/disponibles/:fecha', async (req, res) => {
             WHERE uid = $1
         `, [req.user.uid]);
 
-        const capacidadTurnos = especialista?.capacidad_turnos || 1;
+        const capacidadTurnos = parseInt(especialista?.capacidad_turnos ?? 1, 10);
+
+        // Normalizar formato hora (8:30 -> 08:30) para que coincidan horarios y turnos
+        const normalizarHora = (h) => {
+            if (!h) return '';
+            const s = String(h).trim();
+            const parts = s.split(':');
+            if (parts.length >= 2) {
+                return parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0');
+            }
+            return s;
+        };
 
         // Obtener turnos ya reservados para esa fecha con conteo
         const turnosReservados = await database.query(`
-            SELECT hora, COUNT(*) as count FROM turnos 
+            SELECT hora, COUNT(*)::int as count FROM turnos 
             WHERE especialista_uid = $1 AND fecha = $2 AND estado = 'activo'
             GROUP BY hora
         `, [req.user.uid, fecha]);
 
-        // Crear un mapa de horas ocupadas con su conteo
         const horasOcupadas = {};
         turnosReservados.forEach(turno => {
-            horasOcupadas[turno.hora] = turno.count;
+            const clave = normalizarHora(turno.hora);
+            const count = parseInt(turno.count, 10) || 0;
+            horasOcupadas[clave] = count;
         });
 
-        // Filtrar horarios disponibles considerando la capacidad
-        const horariosLibres = horariosDisponibles.filter(hora => {
-            const turnosEnHora = horasOcupadas[hora] || 0;
-            return turnosEnHora < capacidadTurnos;
-        });
+        // Filtrar horarios disponibles considerando la capacidad y marcar sobre turnos
+        const horariosLibres = horariosDisponibles
+            .filter(hora => {
+                const clave = normalizarHora(hora);
+                const turnosEnHora = horasOcupadas[clave] ?? 0;
+                return turnosEnHora < capacidadTurnos;
+            })
+            .map(hora => {
+                const clave = normalizarHora(hora);
+                const turnosEnHora = horasOcupadas[clave] ?? 0;
+                const sobreTurno = turnosEnHora > 0 && capacidadTurnos === 2;
+                return { hora: clave || String(hora).trim(), sobreTurno };
+            });
 
         res.json({
             success: true,

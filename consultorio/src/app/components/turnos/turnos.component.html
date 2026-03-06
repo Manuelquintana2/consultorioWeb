@@ -47,8 +47,8 @@
           <label for="hora">Hora *</label>
           <select id="hora" formControlName="hora">
             <option value="">Seleccione una hora</option>
-            <option *ngFor="let hora of horariosDisponibles" [value]="hora">
-              {{ hora }}
+            <option *ngFor="let slot of horariosDisponibles" [value]="slot.hora">
+              {{ slot.hora }}{{ slot.sobreTurno ? ' (Sobre turno)' : '' }}
             </option>
           </select>
         </div>
