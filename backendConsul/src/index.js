@@ -36,6 +36,7 @@ const pdfPacientesRoutes = require('./routes/pdf-pacientes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.set('trust proxy', 1);
 // Middleware de seguridad
 app.use(helmet());
 
@@ -44,7 +45,7 @@ app.use(morgan('combined'));
 
 // Middleware de CORS
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:8080',
+    origin:'https://consultorioaguero64.duckdns.org',
     credentials: true
 }));
 
